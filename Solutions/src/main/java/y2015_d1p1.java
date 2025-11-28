@@ -1,8 +1,6 @@
 /*** Main.java ****************************************************************\
  * Author:         twisted_nematic57                                          *
  * Date Created:   2025-11-26                                                 *
- * Date Modified:  2025-11-26                                                 *
- * File Type:      Java Source File                                           *
  * Description:    Solution to Advent of Code 2015 Day 1 Part 1               *
 \******************************************************************************/
 
