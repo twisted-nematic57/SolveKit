@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Test #6" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="$PROJECT_DIR$/../../cfs/hyperjdk2/build/jdk25p12/jdk" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="MAIN_CLASS_NAME" value="Main" />
+    <module name="Solutions" />
+    <option name="PROGRAM_PARAMETERS" value="$FileNameWithoutAllExtensions$_6" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/inputs" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
