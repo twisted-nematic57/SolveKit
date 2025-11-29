@@ -7,7 +7,7 @@
 import java.util.List;
 
 public class y2015_d01p1 {
-  public static void main(List<String> input) {
+  public static void main(List<String> input, boolean verbose) {
     int floor = 0;
     for(int step = 0; step < input.getFirst().length(); step++) {
       if(input.getFirst().charAt(step) == '(') {
@@ -15,8 +15,11 @@ public class y2015_d01p1 {
       } else {
         floor--;
       }
-      System.out.println("Step = " + step + "; Current floor = " + String.format("% d", floor));
+
+      if(verbose) System.out.println("Step = " + step + "; Current floor = " + String.format("% d", floor));
     }
-    System.out.println("\nFinal floor = " + floor);
+
+    if(verbose) System.out.println("\nFinal floor = " + floor);
   }
 }
+
