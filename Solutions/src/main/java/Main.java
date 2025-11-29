@@ -57,6 +57,7 @@ public class Main {
 
         // *.000001 always means we're converting ns -> ms, and *.001 means ns -> μs
         System.out.println("Benchmarking results (execution time):");
+        System.out.println(" - Runs   : " + benchResults.length);
         System.out.printf (" - Lowest : %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[0]*.000001, benchResults[0]*.001);
         System.out.printf (" - Highest: %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[benchResults.length - 1]*.000001, benchResults[benchResults.length - 1]*.001);
       } else {
@@ -91,7 +92,7 @@ public class Main {
   }
 
   // Same as RunSolution, except this one mutes the solutions' printing output and runs them many (`iterations`) times
-  // RETURNS: an array containing the amount of time each iteration took to run
+  // RETURNS: an array containing the amount of time each iteration took to run in nanoseconds
   public static long[] BenchmarkSolution(int year, int day, int part, int test, int iterations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     if(problemDoesntExist(year, day, part, test) || iterations < 1) { // Input validation
       return new long[] {-1};
@@ -135,11 +136,10 @@ public class Main {
   // Loads input from a file into a List<String>
   // RETURNS: the List<String> containing input
   public static List<String> loadInput(int year, int day, int part, int test) {
-    // Load input for the problem and testcase.
-    // Input filename format: input_yYYYY_DD_P_T.txt where YYYY is the year, DD is a two-digit
-    // day #, P is the part number (always 1 or 2), and T is the one-digit test number. If T == 0,
-    // it runs the solution on actual input and not a test.
-    List<String> input = List.of();
+    // Input filename format: input_YYYY_DD_P_T.txt where YYYY is the year, DD is a two-digit day #,
+    // P is the part number (always 1 or 2), and T is the one-digit test number. If T == 0, it runs
+    // the solution on actual input and not a test.
+    List<String> input = List.of(); // Empty list
     try (Stream<String> lines = Files.lines(
         Path.of(String.format("input_%d_%02d_%d_%d.txt", year, day, part, test)))) {
       input = lines.toList();
