@@ -8,6 +8,8 @@
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -24,12 +26,12 @@ public class Main {
     //  * If the letter "B" is present at the end, we need to benchmark the solution N times, where N
     //    is an integer of whatever length.
 
-    if(!args[0].contains("B")) { // No benchmarking, just running the solution once
+    if(!args[0].contains("B")) { // --- RUNNING SOLUTION ONCE ---
       long runtime = RunSolution(
-          Integer.parseInt(args[0].substring(1, 5)), // Year
-          Integer.parseInt(args[0].substring(7, 9)),      // Day
-          Integer.parseInt(args[0].substring(10, 11)),    // Part
-          Integer.parseInt(args[0].substring(12, 13)));   // Test
+          Integer.parseInt(args[0].substring(1, 5)),       // Year
+          Integer.parseInt(args[0].substring(7, 9)),       // Day
+          Integer.parseInt(args[0].substring(10, 11)),     // Part
+          Integer.parseInt(args[0].substring(12, 13)));    // Test
 
       if(runtime != -1) { // In general, if something == -1 in the runner then something has gone wrong; likely an inexistent problem has been input.
         System.out.println("\n---------------------------------------------------");
@@ -37,29 +39,66 @@ public class Main {
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
-    } else { // We are benchmarking.
+    } else { // --- BENCHMARKING ---
       System.out.println("Initializing benchmarking...");
 
       long[] benchResults = BenchmarkSolution(
-          Integer.parseInt(args[0].substring(1, 5)),                           // Year
-          Integer.parseInt(args[0].substring(7, 9)),                                // Day
-          Integer.parseInt(args[0].substring(10, 11)),                              // Part
-          Integer.parseInt(args[0].substring(12, 13)),                              // Test
+          Integer.parseInt(args[0].substring(1, 5)),                      // Year
+          Integer.parseInt(args[0].substring(7, 9)),                      // Day
+          Integer.parseInt(args[0].substring(10, 11)),                    // Part
+          Integer.parseInt(args[0].substring(12, 13)),                    // Test
           Integer.parseInt(args[0].substring(args[0].indexOf("B") + 1))); // # of iterations
 
       if(benchResults[0] != -1) {
-        // Print benchmarking results
-        System.out.println("\n---------------------------------------------------");
-        benchResults = Arrays.stream(benchResults).sorted().toArray(); // Sort the results ascending
-        // Get lengths of longest numbers in the array in both ms and μs for formatting purposes
+        // Process benchmarking results and statistics:
+        // One about the entire list of exec times and one about the last 90% (to account for JVM warmup & stabilization)
+
+        // --- DATA PROCESSING ---
+
+        // last80p = "last 80%"
+        long[] benchResults_last80p = new long[(int)(Math.ceil(benchResults.length*0.8))];
+        // Copy last 80% of elements of benchResults to benchResults_last80p
+        System.arraycopy(benchResults, (int)(Math.floor(benchResults.length*0.2)), benchResults_last80p, 0, (int)(Math.ceil(benchResults.length*0.8)));
+
+        // Sort the results ascending
+        benchResults = Arrays.stream(benchResults).sorted().toArray();
+        benchResults_last80p = Arrays.stream(benchResults_last80p).sorted().toArray();
+
+        // Get lengths of longest numbers in the results in both ms and μs for formatting/padding purposes
+        // *.000001 always means we're converting ns -> ms, and *.001 means ns -> μs
         int longestMillis = String.format("%.3f", benchResults[benchResults.length - 1] * 0.000001).length();
         int longestMicros = String.format("%.1f", benchResults[benchResults.length - 1] * 0.001).length();
+        int longestMillis_last80p = String.format("%.3f", benchResults_last80p[benchResults_last80p.length - 1] * 0.000001).length();
+        int longestMicros_last80p = String.format("%.1f", benchResults_last80p[benchResults_last80p.length - 1] * 0.001).length();
 
-        // *.000001 always means we're converting ns -> ms, and *.001 means ns -> μs
-        System.out.println("Benchmarking results (execution time):");
+        // Statistics calculations
+        BigInteger sum = BigInteger.ZERO;
+        for(int i = 0; i < benchResults.length; i++) { // Sum of all elements
+          sum = sum.add(BigInteger.valueOf(benchResults[i]));
+        }
+        double mean = sum.doubleValue() / benchResults.length;
+
+        BigInteger sum_last80p = BigInteger.ZERO;
+        for(int i = 0; i < benchResults_last80p.length; i++) {
+          sum_last80p = sum_last80p.add(BigInteger.valueOf(benchResults_last80p[i]));
+        }
+        double mean_last80p = sum_last80p.doubleValue() / benchResults_last80p.length;
+
+
+
+        // --- PRINTING ---
+
+        System.out.println("\n---------------------------------------------------");
+
+        System.out.println("Benchmarking results (runtime, all runs):");
         System.out.println(" - Runs   : " + benchResults.length);
         System.out.printf (" - Lowest : %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[0]*.000001, benchResults[0]*.001);
         System.out.printf (" - Highest: %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[benchResults.length - 1]*.000001, benchResults[benchResults.length - 1]*.001);
+
+        System.out.println("\nBenchmarking results (runtime, last 80% of runs):");
+        System.out.println(" - Runs   : " + benchResults_last80p.length);
+        System.out.printf (" - Lowest : %-" + longestMillis_last80p + ".3f ms / %" + longestMicros_last80p + ".1f μs\n", benchResults_last80p[0]*.000001, benchResults_last80p[0]*.001);
+        System.out.printf (" - Highest: %-" + longestMillis_last80p + ".3f ms / %" + longestMicros_last80p + ".1f μs\n", benchResults_last80p[benchResults_last80p.length - 1]*.000001, benchResults_last80p[benchResults_last80p.length - 1]*.001);
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
