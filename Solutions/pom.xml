@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.twisted_nematic57.aoc.java</groupId>
+    <groupId>com.github.twisted_nematic57.aoc.java25</groupId>
     <artifactId>Solutions</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -19,6 +19,11 @@
             <artifactId>junit-jupiter</artifactId>
             <version>RELEASE</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apfloat</groupId>
+            <artifactId>apfloat</artifactId>
+            <version>1.15.0</version>
         </dependency>
     </dependencies>
 

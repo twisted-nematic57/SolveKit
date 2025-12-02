@@ -5,10 +5,11 @@
  *                 benchmarks solutions as needed.                            *
 \******************************************************************************/
 
+import org.apfloat.Apfloat; // For accurate statistics calculations
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
