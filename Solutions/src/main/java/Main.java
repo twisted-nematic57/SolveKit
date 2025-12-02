@@ -6,6 +6,8 @@
 \******************************************************************************/
 
 import org.apfloat.Apfloat; // For accurate statistics calculations
+import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -73,26 +75,82 @@ public class Main {
         int longestMicros_last80p = String.format("%.1f", benchResults_last80p[benchResults_last80p.length - 1] * 0.001).length();
 
         // Statistics calculations
-        BigInteger sum = BigInteger.ZERO;
-        for(int i = 0; i < benchResults.length; i++) { // Sum of all elements
-          sum = sum.add(BigInteger.valueOf(benchResults[i]));
-        }
-        double mean = sum.doubleValue() / benchResults.length;
+        //  * Sum of all runtimes
+        //  * Sum of all runtimes squared
+        //  * Mean
+        //  * Min, Q1, Median, Q3, Max
+        //  * Std. Dev (Population)
 
-        BigInteger sum_last80p = BigInteger.ZERO;
-        for(int i = 0; i < benchResults_last80p.length; i++) {
-          sum_last80p = sum_last80p.add(BigInteger.valueOf(benchResults_last80p[i]));
+        // - Sum
+        Apint sum = Apint.ZERO;
+        for(int i = 0; i < benchResults.length; i++) {
+          sum = sum.add(new Apint(benchResults[i]));
         }
-        double mean_last80p = sum_last80p.doubleValue() / benchResults_last80p.length;
 
+        // - Sum of all elements squared
+        Apint sum2 = Apint.ZERO;
+        for(int i = 0; i < benchResults.length; i++) {
+          Apint thisval = new Apint(benchResults[i]); // Get the number
+          thisval = thisval.multiply(new Apint(benchResults[i])); // Square it
+          sum2 = sum2.add(thisval); // Add to list
+        }
+
+        // - Mean
+        Apfloat mean = sum.divide(new Apint(benchResults.length));
+
+        // - Median
+        long median = medianOf(benchResults, 0, benchResults.length - 1);
+
+        // - Q1 and Q3 (Tukey hinges)
+        long q1, q3;
+
+        // mid = benchResults.length / 2; n = benchResults.length
+        if ((benchResults.length / 2) % 2 == 0) {
+          // even -> lower: [0 .. mid-1], upper: [mid .. n-1]
+          q1 = medianOf(benchResults, 0, (benchResults.length / 2) - 1);
+          q3 = medianOf(benchResults, (benchResults.length / 2), (benchResults.length / 2) - 1);
+        } else {
+          // odd -> skip the median element
+          // lower: [0 .. mid-1], upper: [mid+1 .. n-1]
+          q1 = medianOf(benchResults, 0, (benchResults.length / 2) - 1);
+          q3 = medianOf(benchResults, (benchResults.length / 2) + 1, (benchResults.length / 2) - 1);
+        }
+
+        // Population standard deviation
+
+        // - Sum of all elements squared minus mean
+        Apint sum2_stddev = Apint.ZERO;
+        for(int i = 0; i < benchResults.length; i++) {
+          Apint thisval = new Apint(benchResults[i]); // Get the number
+          thisval = (Apint)thisval.subtract(mean); // Subtract the mean
+          thisval = thisval.multiply(new Apint(benchResults[i])); // Square it
+          sum2_stddev = sum2_stddev.add(thisval); // Add to list
+        }
+
+        // - Std dev formula
+        Apfloat popStdDev = ApfloatMath.sqrt(sum2_stddev.divide(new Apint(benchResults.length)));
 
 
         // --- PRINTING ---
 
         System.out.println("\n---------------------------------------------------");
-
         System.out.println("Benchmarking results (runtime, all runs):");
-        System.out.println(" - Runs   : " + benchResults.length);
+        System.out.println(" - Runs     :");
+        System.out.println(" - Mean     :");
+        System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
+        System.out.println(" - Min      :");
+        System.out.println(" - Q1       :");
+        System.out.println(" - Median   :");
+        System.out.println(" - Q3       :");
+        System.out.println(" - Max      :");
+        System.out.println(" - Stddev   :");
+        System.out.println(" - Σ(time)  :");
+        System.out.println(" - Σ(time^2):");
+
+
+
+
+        /*System.out.println(" - Runs   : " + benchResults.length);
         System.out.printf (" - Lowest : %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[0]*.000001, benchResults[0]*.001);
         System.out.printf (" - Highest: %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[benchResults.length - 1]*.000001, benchResults[benchResults.length - 1]*.001);
 
@@ -100,6 +158,7 @@ public class Main {
         System.out.println(" - Runs   : " + benchResults_last80p.length);
         System.out.printf (" - Lowest : %-" + longestMillis_last80p + ".3f ms / %" + longestMicros_last80p + ".1f μs\n", benchResults_last80p[0]*.000001, benchResults_last80p[0]*.001);
         System.out.printf (" - Highest: %-" + longestMillis_last80p + ".3f ms / %" + longestMicros_last80p + ".1f μs\n", benchResults_last80p[benchResults_last80p.length - 1]*.000001, benchResults_last80p[benchResults_last80p.length - 1]*.001);
+        */
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
@@ -190,4 +249,16 @@ public class Main {
 
     return input;
   }
+
+  // Median of a subarray [l, r] inclusive
+  static long medianOf(long[] arr, int l, int r) {
+    int len = r - l + 1;
+    int mid = l + len/2;
+    if (len % 2 == 0) {
+      return (arr[mid] + arr[mid - 1]) / 2;
+    } else {
+      return arr[mid];
+    }
+  }
+
 }
