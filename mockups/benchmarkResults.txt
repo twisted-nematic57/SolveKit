@@ -1,13 +1,16 @@
----------------------------------------------------
-Benchmarking results (runtime, all runs):
- * Runs     : XXXXXX.XXX ms / XXXXXX.XXX μs
- * Mean     : XXXXXX.XXX ms / XXXXXX.XXX μs
-- - - - - - - - - - - - - - - - - - - - - - - - - -
- * Min      : XXXXXX.XXX ms / XXXXXX.XXX μs 
- * Q1       : XXXXXX.XXX ms / XXXXXX.XXX μs
- * Median   : XXXXXX.XXX ms / XXXXXX.XXX μs
- * Q3       : XXXXXX.XXX ms / XXXXXX.XXX μs
- * Max      : XXXXXX.XXX ms / XXXXXX.XXX μs
- * Stddev   : XXXXXX.XXX ms / XXXXXX.XXX μs
- * Σ(time)  : XXXXXXXX.X  s / HHHHH:MM:SS.III
- * Σ(time^2): XXXXXX.XXX  s /   HHH:MM:SS.III
+| ------------------------------------------------|------------------------------------------------ |
+| Benchmarking results (runtime, all runs):       | Benchmarking results (runtime, last 80% runs):  |
+|  * Runs     : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Runs     : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+|  * Mean     : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Mean     : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+| - - - - - - - - - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - - - - - - - - - |
+|  * Min      : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Min      : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+|  * Q1       : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Q1       : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+|  * Median   : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Median   : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+|  * Q3       : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Q3       : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+|  * Max      : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Max      : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+|  * Stddev   : XXXXXX.XXX ms / XXXXXX.XXX μs     |  * Stddev   : XXXXXX.XXX ms / XXXXXX.XXX μs     |
+|  * Σ(time)  : XXXXXXXX.X  s / HHHHH:MM:SS.III   |  * Σ(time)  : XXXXXXXX.X  s / HHHHH:MM:SS.III   |
+|  * Σ(time^2): XXXXXX.XXX  s /   HHH:MM:SS.III   |  * Σ(time^2): XXXXXX.XXX  s /   HHH:MM:SS.III   |
+| ------------------------------------------------|------------------------------------------------ |
+
+Data saved to $PATH/benchResults.csv
