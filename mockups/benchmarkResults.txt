@@ -1,14 +1,14 @@
-┌─────────────────────────────────────────────────┬─────────────────────────────────────────────────┐
-│ Benchmark results (runtime, all runs):          │ Benchmark results (runtime, last 80% of runs):  │
-│  * Runs     : X[...] times                      │  * Runs     : X[...] times                      │
-│  * Mean     : XXXXXXXX.XXX ms / XXXXXXXXX.X μs  │  * Mean     : XXXXXXXX.XXX ms / XXXXXXXXX.X μs  │
-├─────────────────────────────────────────────────┼─────────────────────────────────────────────────┤
-│  * Min      : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │  * Min      : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │
-│  * Q1       : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │  * Q1       : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │
-│  * Median   : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │  * Median   : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │
-│  * Q3       : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │  * Q3       : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │
-│  * Max      : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │  * Max      : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │
-│  * Stddev   : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │  * Stddev   : XXXXXX.XXX ms / XXXXXXXXX.XXX μs  │
-│  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  │  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  │
-│  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  │  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  │
-└─────────────────────────────────────────────────┴─────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Benchmark results (runtime, all runs):          ┃ Benchmark results (runtime, last 80% of runs):  ┃
+┃  * Runs     : X[...]                            ┃  * Runs     : X[...]                            ┃
+┃  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┠─────────────────────────────────────────────────╂─────────────────────────────────────────────────┨
+┃  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┃  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃
+┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛

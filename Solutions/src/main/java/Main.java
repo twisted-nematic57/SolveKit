@@ -12,7 +12,6 @@ import org.apfloat.Apint;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -26,7 +25,7 @@ public class Main {
     //  * XX is the day (always 2 digits)
     //  * Y is the part number (always == 1 or 2)
     //  * Z is the test number (always 1 digit)
-    //  * If the letter "B" is present at the end, we need to benchmark the solution N times, where N
+    //  * If the letter "B" is present after Z, we need to benchmark the solution N times, where N
     //    is an integer of whatever length.
 
     if(!args[0].contains("B")) { // --- RUNNING SOLUTION ONCE ---
@@ -67,98 +66,121 @@ public class Main {
         benchResults = Arrays.stream(benchResults).sorted().toArray();
         benchResults_last80p = Arrays.stream(benchResults_last80p).sorted().toArray();
 
-        // Get lengths of longest numbers in the results in both ms and μs for formatting/padding purposes
-        // *.000001 always means we're converting ns -> ms, and *.001 means ns -> μs
-        int longestMillis = String.format("%.3f", benchResults[benchResults.length - 1] * 0.000001).length();
-        int longestMicros = String.format("%.1f", benchResults[benchResults.length - 1] * 0.001).length();
-        int longestMillis_last80p = String.format("%.3f", benchResults_last80p[benchResults_last80p.length - 1] * 0.000001).length();
-        int longestMicros_last80p = String.format("%.1f", benchResults_last80p[benchResults_last80p.length - 1] * 0.001).length();
-
         // Statistics calculations
-        //  * Sum of all runtimes
-        //  * Sum of all runtimes squared
-        //  * Mean
-        //  * Min, Q1, Median, Q3, Max
-        //  * Std. Dev (Population)
 
-        // - Sum
-        Apint sum = Apint.ZERO;
-        for(int i = 0; i < benchResults.length; i++) {
-          sum = sum.add(new Apint(benchResults[i]));
-        }
 
-        // - Sum of all elements squared
-        Apint sum2 = Apint.ZERO;
-        for(int i = 0; i < benchResults.length; i++) {
-          Apint thisval = new Apint(benchResults[i]); // Get the number
-          thisval = thisval.multiply(new Apint(benchResults[i])); // Square it
-          sum2 = sum2.add(thisval); // Add to list
-        }
+        // TEMP: use dummy values to test printing system
+        int runs = 9189;
+        long mean = 83675700;
+        long min = 53345700;
+        long q1 = 81283300;
+        long median = 102467700;
+        long q3 = 129848400;
+        long max = 152467600;
+        long stddev = 5567;
+        Apint timeSum = new Apint("123456786789"); // in nanoseconds
+        Apint remainder = timeSum;
+        int timeSum_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
+        remainder = remainder.mod(new Apint("3600000000000"));
+        short timeSum_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
+        remainder = remainder.mod(new Apint("60000000000"));
+        short timeSum_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
+        remainder = remainder.mod(new Apint("1000000000"));
+        short timeSum_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
 
-        // - Mean
-        Apfloat mean = sum.divide(new Apint(benchResults.length));
+        Apint timeSquaredSum = new Apint("123456786789036789");
+        remainder = timeSquaredSum;
+        int timeSquaredSum_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
+        remainder = remainder.mod(new Apint("3600000000000"));
+        short timeSquaredSum_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
+        remainder = remainder.mod(new Apint("60000000000"));
+        short timeSquaredSum_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
+        remainder = remainder.mod(new Apint("1000000000"));
+        short timeSquaredSum_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
 
-        // - Median
-        long median = medianOf(benchResults, 0, benchResults.length - 1);
-
-        // - Q1 and Q3 (Tukey hinges)
-        long q1, q3;
-
-        // mid = benchResults.length / 2; n = benchResults.length
-        if ((benchResults.length / 2) % 2 == 0) {
-          // even -> lower: [0 .. mid-1], upper: [mid .. n-1]
-          q1 = medianOf(benchResults, 0, (benchResults.length / 2) - 1);
-          q3 = medianOf(benchResults, (benchResults.length / 2), (benchResults.length / 2) - 1);
-        } else {
-          // odd -> skip the median element
-          // lower: [0 .. mid-1], upper: [mid+1 .. n-1]
-          q1 = medianOf(benchResults, 0, (benchResults.length / 2) - 1);
-          q3 = medianOf(benchResults, (benchResults.length / 2) + 1, (benchResults.length / 2) - 1);
-        }
-
-        // Population standard deviation
-
-        // - Sum of all elements squared minus mean
-        Apint sum2_stddev = Apint.ZERO;
-        for(int i = 0; i < benchResults.length; i++) {
-          Apint thisval = new Apint(benchResults[i]); // Get the number
-          thisval = (Apint)thisval.subtract(mean); // Subtract the mean
-          thisval = thisval.multiply(new Apint(benchResults[i])); // Square it
-          sum2_stddev = sum2_stddev.add(thisval); // Add to list
-        }
-
-        // - Std dev formula
-        Apfloat popStdDev = ApfloatMath.sqrt(sum2_stddev.divide(new Apint(benchResults.length)));
+        int runs_last80p = 7678;
+        long mean_last80p = 83675700;
+        long min_last80p = 53345700;
+        long q1_last80p = 81283300;
+        long median_last80p = 102467700;
+        long q3_last80p = 129848400;
+        long max_last80p = 152467600;
+        long stddev_last80p = 5567;
+        Apint timeSum_last80p = new Apint("123456786789");
+        remainder = timeSum_last80p;
+        int timeSum_last80p_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
+        remainder = remainder.mod(new Apint("3600000000000"));
+        short timeSum_last80p_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
+        remainder = remainder.mod(new Apint("60000000000"));
+        short timeSum_last80p_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
+        remainder = remainder.mod(new Apint("1000000000"));
+        short timeSum_last80p_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
+        
+        Apint timeSquaredSum_last80p = new Apint("123456786789036789");
+        remainder = timeSquaredSum_last80p;
+        int timeSquaredSum_last80p_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
+        remainder = remainder.mod(new Apint("3600000000000"));
+        short timeSquaredSum_last80p_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
+        remainder = remainder.mod(new Apint("60000000000"));
+        short timeSquaredSum_last80p_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
+        remainder = remainder.mod(new Apint("1000000000"));
+        short timeSquaredSum_last80p_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
 
 
         // --- PRINTING ---
 
-        System.out.println("\n---------------------------------------------------");
-        System.out.println("Benchmarking results (runtime, all runs):");
-        System.out.println(" - Runs     :");
-        System.out.println(" - Mean     :");
-        System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
-        System.out.println(" - Min      :");
-        System.out.println(" - Q1       :");
-        System.out.println(" - Median   :");
-        System.out.println(" - Q3       :");
-        System.out.println(" - Max      :");
-        System.out.println(" - Stddev   :");
-        System.out.println(" - Σ(time)  :");
-        System.out.println(" - Σ(time^2):");
+        /* Expected datatypes & formats before printing begins:
+         - Runs:      int, unitless
+         - Mean:      long, nanoseconds
+         - Min:       long, nanoseconds
+         - Q1:        long, nanoseconds
+         - Median:    long, nanoseconds
+         - Q3:        long, nanoseconds
+         - Max:       long, nanoseconds
+         - Stddev:    long, nanoseconds
+         - Σ(time):   Apint, nanoseconds
+         - Σ(time^2): Apint, nanoseconds (technically squared, but we don't care)
+        Time sums are accompanied by sets of four ints representing hours, minutes, seconds and milliseconds.
+        All of the above are repeated once again for the last 80% of runs.
 
+        Conversions:
+        Nanosecond -> Microsecond: *.001
+        Nanosecond -> Millisecond: *.000001
+        Nanosecond -> Second     : *.000000001
 
-
-
-        /*System.out.println(" - Runs   : " + benchResults.length);
-        System.out.printf (" - Lowest : %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[0]*.000001, benchResults[0]*.001);
-        System.out.printf (" - Highest: %-" + longestMillis + ".3f ms / %" + longestMicros + ".1f μs\n", benchResults[benchResults.length - 1]*.000001, benchResults[benchResults.length - 1]*.001);
-
-        System.out.println("\nBenchmarking results (runtime, last 80% of runs):");
-        System.out.println(" - Runs   : " + benchResults_last80p.length);
-        System.out.printf (" - Lowest : %-" + longestMillis_last80p + ".3f ms / %" + longestMicros_last80p + ".1f μs\n", benchResults_last80p[0]*.000001, benchResults_last80p[0]*.001);
-        System.out.printf (" - Highest: %-" + longestMillis_last80p + ".3f ms / %" + longestMicros_last80p + ".1f μs\n", benchResults_last80p[benchResults_last80p.length - 1]*.000001, benchResults_last80p[benchResults_last80p.length - 1]*.001);
+        The goal is to have benchmark stats be printed in this pretty and predictable format:
+        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+        ┃ Benchmark results (runtime, all runs):          ┃ Benchmark results (runtime, last 80% of runs):  ┃
+        ┃  * Runs     : X[...]                            ┃  * Runs     : X[...]                            ┃
+        ┃  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┠─────────────────────────────────────────────────╂─────────────────────────────────────────────────┨
+        ┃  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┃  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃
+        ┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃
+        ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
         */
+
+        System.out.println("\n");
+        System.out.println("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
+        System.out.println("┃ Benchmark results (runtime, all runs):          ┃ Benchmark results (runtime, last 80% of runs):  ┃");
+        System.out.printf ("┃  * Runs     : %-32d  ┃  * Runs     : %-32d  ┃\n", runs, runs_last80p);
+        System.out.printf ("┃  * Mean     : %-11.3f ms / %-12.1f μs  ┃  * Mean     : %-11.3f ms / %-12.1f μs  ┃\n", mean*.000001, mean*.001, mean_last80p*.000001, mean_last80p*.001);
+        System.out.println("┠─────────────────────────────────────────────────╂─────────────────────────────────────────────────┨");
+        System.out.printf ("┃  * Min      : %-11.3f ms / %-12.1f μs  ┃  * Min      : %-11.3f ms / %-12.1f μs  ┃\n", min*.000001, min*.001, min_last80p*.000001, min_last80p*.001);
+        System.out.printf ("┃  * Q1       : %-11.3f ms / %-12.1f μs  ┃  * Q1       : %-11.3f ms / %-12.1f μs  ┃\n", q1*.000001, q1*.001, q1_last80p*.000001, q1_last80p*.001);
+        System.out.printf ("┃  * Median   : %-11.3f ms / %-12.1f μs  ┃  * Median   : %-11.3f ms / %-12.1f μs  ┃\n", median*.000001, median*.001, median_last80p*.000001, median_last80p*.001);
+        System.out.printf ("┃  * Q3       : %-11.3f ms / %-12.1f μs  ┃  * Q3       : %-11.3f ms / %-12.1f μs  ┃\n", q3*.000001, q3*.001, q3_last80p*.000001, q3_last80p*.001);
+        System.out.printf ("┃  * Max      : %-11.3f ms / %-12.1f μs  ┃  * Max      : %-11.3f ms / %-12.1f μs  ┃\n", max*.000001, max*.001, max_last80p*.000001, max_last80p*.001);
+        System.out.printf ("┃  * Stddev   : %-11.3f ms / %-12.1f μs  ┃  * Stddev   : %-11.3f ms / %-12.1f μs  ┃\n", stddev*.000001, stddev*.001, stddev_last80p*.000001, stddev_last80p*.001);
+        System.out.printf ("┃  * Σ(time)  : %-11.3f s /   %4d:%02d:%02d.%03d  ┃  * Σ(time)  : %-11.3f s /   %4d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_h, timeSum_m, timeSum_s, timeSum_ms, Double.parseDouble(timeSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_last80p_h, timeSum_last80p_m, timeSum_last80p_s, timeSum_last80p_ms);
+        System.out.printf ("┃  * Σ(time^2): %-11.1f s / %6d:%02d:%02d.%03d  ┃  * Σ(time^2): %-11.1f s / %6d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSquaredSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSquaredSum_h, timeSquaredSum_m, timeSquaredSum_s, timeSquaredSum_ms, Double.parseDouble(timeSquaredSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSquaredSum_last80p_h, timeSquaredSum_last80p_m, timeSquaredSum_last80p_s, timeSquaredSum_last80p_ms);        System.out.println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
+
+
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
