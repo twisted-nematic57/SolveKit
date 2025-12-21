@@ -53,32 +53,51 @@ public class Main {
 
       if(benchResults[0] != -1) {
         // Process benchmarking results and statistics:
-        // One about the entire list of exec times and one about the last 90% (to account for JVM warmup & stabilization)
+        // One about the entire list of exec times and one about the last 80% (to account for JVM warmup, optimization & stabilization)
 
         // --- DATA PROCESSING ---
-
         // last80p = "last 80%"
-        long[] benchResults_last80p = new long[(int)(Math.ceil(benchResults.length*0.8))];
-        // Copy last 80% of elements of benchResults to benchResults_last80p
-        System.arraycopy(benchResults, (int)(Math.floor(benchResults.length*0.2)), benchResults_last80p, 0, (int)(Math.ceil(benchResults.length*0.8)));
 
-        // Sort the results ascending
+        // * DBG: dummy data for accuracy testing
+        benchResults = new long[]{1, 4, 16, 32, 64};
+        int runs = benchResults.length;
+
+
+
+
+
+
+
+        // Make an array of length 80% of benchResults
+        long[] benchResults_last80p = new long[(int)(Math.ceil(runs*0.8))];
+        int runs_last80p = benchResults_last80p.length;
+        // Copy the last 80% of elements of benchResults to benchResults_last80p
+        System.arraycopy(benchResults, (int)(Math.floor(runs*0.2)), benchResults_last80p, 0, runs_last80p);
+
+        // Sort the results ascending (the least element goes to position 0, etc.)
         benchResults = Arrays.stream(benchResults).sorted().toArray();
         benchResults_last80p = Arrays.stream(benchResults_last80p).sorted().toArray();
 
         // Statistics calculations
+        long min = benchResults[0]; // Minimum
+        long max = benchResults[runs-1]; // Maximum
 
+        Apint timeSum = new Apint(0); // Sum of all runtimes
+        for(int i = 0; i < runs; i++) {
+          timeSum = timeSum.add(new Apint(benchResults[i]));
+        }
+        long mean = Long.parseLong(timeSum.divide(new Apint(runs)).toString()); // Mean
 
         // TEMP: use dummy values to test printing system
-        int runs = 9189;
-        long mean = 83675700;
-        long min = 53345700;
+        //int runs = 9189;
+        //long mean = 83675700;
+        //long min = 53345700;
         long q1 = 81283300;
         long median = 102467700;
         long q3 = 129848400;
-        long max = 152467600;
+        //long max = 152467600;
         long stddev = 5567;
-        Apint timeSum = new Apint("123456786789"); // in nanoseconds
+        //Apint timeSum = new Apint("123456786789"); // in nanoseconds
         Apint remainder = timeSum;
         int timeSum_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
         remainder = remainder.mod(new Apint("3600000000000"));
@@ -179,8 +198,6 @@ public class Main {
         System.out.printf ("┃  * Stddev   : %-11.3f ms / %-12.1f μs  ┃  * Stddev   : %-11.3f ms / %-12.1f μs  ┃\n", stddev*.000001, stddev*.001, stddev_last80p*.000001, stddev_last80p*.001);
         System.out.printf ("┃  * Σ(time)  : %-11.3f s /   %4d:%02d:%02d.%03d  ┃  * Σ(time)  : %-11.3f s /   %4d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_h, timeSum_m, timeSum_s, timeSum_ms, Double.parseDouble(timeSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_last80p_h, timeSum_last80p_m, timeSum_last80p_s, timeSum_last80p_ms);
         System.out.printf ("┃  * Σ(time^2): %-11.1f s / %6d:%02d:%02d.%03d  ┃  * Σ(time^2): %-11.1f s / %6d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSquaredSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSquaredSum_h, timeSquaredSum_m, timeSquaredSum_s, timeSquaredSum_ms, Double.parseDouble(timeSquaredSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSquaredSum_last80p_h, timeSquaredSum_last80p_m, timeSquaredSum_last80p_s, timeSquaredSum_last80p_ms);        System.out.println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
-
-
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
