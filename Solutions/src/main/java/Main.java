@@ -1,13 +1,14 @@
 /*** Main.java ****************************************************************\
  * Author:         twisted_nematic57                                          *
  * Date Created:   2025-11-26                                                 *
- * Description:    Sets up the AoC solution runner. Runs, tests, or           *
- *                 benchmarks solutions as needed.                            *
+ * Description:    Sets up the solution runner by recognizing the platform    *
+ *                 type and setting inputs. Runs, tests, or benchmarks        *
+ *                 solutions using reflection.                                *
 \******************************************************************************/
 
 import org.apfloat.Apfloat; // For accurate statistics calculations
-import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
+import org.apfloat.ApintMath;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +53,8 @@ public class Main {
           Integer.parseInt(args[0].substring(args[0].indexOf("B") + 1))); // # of iterations
 
       if(benchResults[0] != -1) {
+        System.out.println("\n---------------------------------------------------");
+        System.out.println("Calculating statistics...");
         // Process benchmarking results and statistics:
         // One about the entire list of exec times and one about the last 80% (to account for JVM warmup, optimization & stabilization)
 
@@ -59,8 +62,8 @@ public class Main {
         // last80p = "last 80%"
 
         // * DBG: dummy data for accuracy testing
-        benchResults = new long[]{1, 4, 16, 32, 64};
-        int runs = benchResults.length;
+        //benchResults = new long[]{1024, 2048, 4096, 8192, 16384};
+        final int runs = benchResults.length;
 
 
 
@@ -78,25 +81,63 @@ public class Main {
         benchResults = Arrays.stream(benchResults).sorted().toArray();
         benchResults_last80p = Arrays.stream(benchResults_last80p).sorted().toArray();
 
-        // Statistics calculations
-        long min = benchResults[0]; // Minimum
-        long max = benchResults[runs-1]; // Maximum
+
+        // --- STATISTICS CALCULATIONS ---
+        final long min = benchResults[0]; // Minimum
+        final long max = benchResults[runs-1]; // Maximum
 
         Apint timeSum = new Apint(0); // Sum of all runtimes
         for(int i = 0; i < runs; i++) {
           timeSum = timeSum.add(new Apint(benchResults[i]));
         }
-        long mean = Long.parseLong(timeSum.divide(new Apint(runs)).toString()); // Mean
+        final long mean = Long.parseLong(timeSum.divide(new Apint(runs)).toString()); // Mean
+
+        // Quartile formula: `(x/4)*(n+1)`th term, where x = 1 for Q1, x = 2 for median, and x = 3 for Q3
+        // Form used below: `(n+1)*(x/4)` where `x/4` is in decimal form
+        final double q1pos = ((runs+1)*0.25)-1; // Doubles are accurate enough in [2^31 - 1, 2^32 - 1] for this usecase.
+        final double medianpos = ((runs+1)*0.50)-1; // -1 at the end because arrays are zero-indexed. The quartile fmla.
+        final double q3pos = ((runs+1)*0.75)-1;     // only gives answers assuming 1-indexing of elements
+        long q1, median, q3; // Have to define these beforehand due to scoping issues
+
+        if(q1pos - (int)q1pos < 0.1) { // Q1 is at data[q1pos] exactly.
+          q1 = benchResults[(int)q1pos];
+        } else { // If Q1 isn't exactly at q1pos, average the values adjacent to it
+          q1 = (benchResults[(int)(q1pos+1)] + benchResults[(int)q1pos]) / 2;
+        }
+
+        if(medianpos - (int)medianpos < 0.1) { // Median is at data[medianpos] exactly.
+          median = benchResults[(int)medianpos];
+        } else { // If median isn't exactly at medianpos, average the values adjacent to it
+          median = (benchResults[(int)(medianpos+1)] + benchResults[(int)medianpos]) / 2;
+        }
+
+        if(q3pos - (int)q3pos < 0.1) { // Q3 is at data[q3pos] exactly.
+          q3 = benchResults[(int)q3pos];
+        } else { // If Q3 isn't exactly at q3pos, average the values adjacent to it
+          q3 = (benchResults[(int)(q3pos+1)] + benchResults[(int)q3pos]) / 2;
+        }
+
+        // Population standard deviation calculation
+        Apint unnormalizedVariance = new Apint(0);
+        for(int i = 0; i < runs; i++) { // Compute unnormalized variance = Σ(X - μ)^2
+          unnormalizedVariance = unnormalizedVariance
+              .add(ApintMath.pow(new Apint(benchResults[i] - mean), 2));
+        }
+
+        // Calculate stddev to 20 sigfigs (we can't possibly need more than 20 right?)
+        // Computes sqrt(u/runs) where u = unnormalized variance; array access [0] because we don't care about the
+        // remainder from integer square rooting (since we're dealing in nanoseconds so it isn't significant)
+        long stddev = Long.parseLong(ApintMath.sqrt(unnormalizedVariance.divide(new Apint(runs)))[0].toString());
 
         // TEMP: use dummy values to test printing system
         //int runs = 9189;
         //long mean = 83675700;
         //long min = 53345700;
-        long q1 = 81283300;
-        long median = 102467700;
-        long q3 = 129848400;
+        //long q1 = 81283300;
+        //long median = 102467700;
+        //long q3 = 129848400;
         //long max = 152467600;
-        long stddev = 5567;
+        //long stddev = 5567;
         //Apint timeSum = new Apint("123456786789"); // in nanoseconds
         Apint remainder = timeSum;
         int timeSum_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
@@ -107,17 +148,7 @@ public class Main {
         remainder = remainder.mod(new Apint("1000000000"));
         short timeSum_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
 
-        Apint timeSquaredSum = new Apint("123456786789036789");
-        remainder = timeSquaredSum;
-        int timeSquaredSum_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
-        remainder = remainder.mod(new Apint("3600000000000"));
-        short timeSquaredSum_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
-        remainder = remainder.mod(new Apint("60000000000"));
-        short timeSquaredSum_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
-        remainder = remainder.mod(new Apint("1000000000"));
-        short timeSquaredSum_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
-
-        int runs_last80p = 7678;
+        //int runs_last80p = 7678;
         long mean_last80p = 83675700;
         long min_last80p = 53345700;
         long q1_last80p = 81283300;
@@ -134,16 +165,6 @@ public class Main {
         short timeSum_last80p_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
         remainder = remainder.mod(new Apint("1000000000"));
         short timeSum_last80p_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
-        
-        Apint timeSquaredSum_last80p = new Apint("123456786789036789");
-        remainder = timeSquaredSum_last80p;
-        int timeSquaredSum_last80p_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
-        remainder = remainder.mod(new Apint("3600000000000"));
-        short timeSquaredSum_last80p_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
-        remainder = remainder.mod(new Apint("60000000000"));
-        short timeSquaredSum_last80p_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
-        remainder = remainder.mod(new Apint("1000000000"));
-        short timeSquaredSum_last80p_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
 
 
         // --- PRINTING ---
@@ -158,11 +179,11 @@ public class Main {
          - Max:       long, nanoseconds
          - Stddev:    long, nanoseconds
          - Σ(time):   Apint, nanoseconds
-         - Σ(time^2): Apint, nanoseconds (technically squared, but we don't care)
         Time sums are accompanied by sets of four ints representing hours, minutes, seconds and milliseconds.
+        Individual time sum components are labeled with _h, _m, _s, and _ms respectively.
         All of the above are repeated once again for the last 80% of runs.
 
-        Conversions:
+        Conversions (TODO: refactor this into a UnitConverter class):
         Nanosecond -> Microsecond: *.001
         Nanosecond -> Millisecond: *.000001
         Nanosecond -> Second     : *.000000001
@@ -178,9 +199,8 @@ public class Main {
         ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
         ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
         ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃
-        ┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃
+        ┃  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+        ┃  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃
         ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
         */
 
@@ -195,9 +215,10 @@ public class Main {
         System.out.printf ("┃  * Median   : %-11.3f ms / %-12.1f μs  ┃  * Median   : %-11.3f ms / %-12.1f μs  ┃\n", median*.000001, median*.001, median_last80p*.000001, median_last80p*.001);
         System.out.printf ("┃  * Q3       : %-11.3f ms / %-12.1f μs  ┃  * Q3       : %-11.3f ms / %-12.1f μs  ┃\n", q3*.000001, q3*.001, q3_last80p*.000001, q3_last80p*.001);
         System.out.printf ("┃  * Max      : %-11.3f ms / %-12.1f μs  ┃  * Max      : %-11.3f ms / %-12.1f μs  ┃\n", max*.000001, max*.001, max_last80p*.000001, max_last80p*.001);
-        System.out.printf ("┃  * Stddev   : %-11.3f ms / %-12.1f μs  ┃  * Stddev   : %-11.3f ms / %-12.1f μs  ┃\n", stddev*.000001, stddev*.001, stddev_last80p*.000001, stddev_last80p*.001);
-        System.out.printf ("┃  * Σ(time)  : %-11.3f s /   %4d:%02d:%02d.%03d  ┃  * Σ(time)  : %-11.3f s /   %4d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_h, timeSum_m, timeSum_s, timeSum_ms, Double.parseDouble(timeSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_last80p_h, timeSum_last80p_m, timeSum_last80p_s, timeSum_last80p_ms);
-        System.out.printf ("┃  * Σ(time^2): %-11.1f s / %6d:%02d:%02d.%03d  ┃  * Σ(time^2): %-11.1f s / %6d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSquaredSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSquaredSum_h, timeSquaredSum_m, timeSquaredSum_s, timeSquaredSum_ms, Double.parseDouble(timeSquaredSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSquaredSum_last80p_h, timeSquaredSum_last80p_m, timeSquaredSum_last80p_s, timeSquaredSum_last80p_ms);        System.out.println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
+        System.out.printf ("┃  * Stddev[σ]: %-11.3f ms / %-12.1f μs  ┃  * Stddev[σ]: %-11.3f ms / %-12.1f μs  ┃\n", stddev*.000001, stddev*.001, stddev_last80p*.000001, stddev_last80p*.001);
+        System.out.printf ("┃  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  ┃  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_h, timeSum_m, timeSum_s, timeSum_ms, Double.parseDouble(timeSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_last80p_h, timeSum_last80p_m, timeSum_last80p_s, timeSum_last80p_ms);
+        System.out.println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
+
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
@@ -251,7 +272,7 @@ public class Main {
 
       // Print the amount of time this iteration took to execute in both milliseconds and microseconds as both may be useful.
       System.out.printf("Iteration " +
-          String.format("%-" + Integer.toString(iterations).length() + "d", i + 1).replace(' ','.') +
+          String.format("%-" + Integer.toString(iterations).length() + "d", i + 1) +
           ": %.3f ms / %.1f μs\n", execTimes[i]*.000001, execTimes[i]*.001);
       // Explanation of the `String.format` line in the above mess: Java's printf does not support padding chars other than 0 and space.
       // So, I have to replace the spaces produced by printf with dots myself with `.replace`.
@@ -288,16 +309,4 @@ public class Main {
 
     return input;
   }
-
-  // Median of a subarray [l, r] inclusive
-  static long medianOf(long[] arr, int l, int r) {
-    int len = r - l + 1;
-    int mid = l + len/2;
-    if (len % 2 == 0) {
-      return (arr[mid] + arr[mid - 1]) / 2;
-    } else {
-      return arr[mid];
-    }
-  }
-
 }

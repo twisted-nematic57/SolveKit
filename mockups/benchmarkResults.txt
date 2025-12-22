@@ -8,7 +8,6 @@
 ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
 ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
 ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Stddev   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃
-┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃  * Σ(time^2): XXXXXXXXX.X s / HHHHHH:MM:SS.III  ┃
+┃  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
+┃  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  ┃  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛

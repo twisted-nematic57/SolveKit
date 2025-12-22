@@ -1,4 +1,4 @@
-# AoC's creator specifically requests that input not be distributed by users
+# AdventOfCode's creator specifically requests that input not be distributed by users
 input*.txt
 
 # Build artifacts
