@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SolveKit:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SolveKit_jar</output-path>
+    <root id="archive" name="SolveKit.jar">
+      <element id="module-output" name="Solutions" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apfloat/apfloat/1.15.0/apfloat-1.15.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

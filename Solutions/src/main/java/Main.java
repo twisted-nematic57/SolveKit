@@ -7,15 +7,14 @@
 \******************************************************************************/
 
 import org.apfloat.Apfloat; // For accurate statistics calculations
-import org.apfloat.Apint;
-import org.apfloat.ApintMath;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -58,114 +57,14 @@ public class Main {
         // Process benchmarking results and statistics:
         // One about the entire list of exec times and one about the last 80% (to account for JVM warmup, optimization & stabilization)
 
-        // --- DATA PROCESSING ---
-        // last80p = "last 80%"
-
-        // * DBG: dummy data for accuracy testing
-        //benchResults = new long[]{1024, 2048, 4096, 8192, 16384};
-        final int runs = benchResults.length;
-
-
-
-
-
-
-
         // Make an array of length 80% of benchResults
-        long[] benchResults_last80p = new long[(int)(Math.ceil(runs*0.8))];
-        int runs_last80p = benchResults_last80p.length;
+        long[] benchResults_last80p = new long[(int)(Math.ceil(benchResults.length*0.8))];
         // Copy the last 80% of elements of benchResults to benchResults_last80p
-        System.arraycopy(benchResults, (int)(Math.floor(runs*0.2)), benchResults_last80p, 0, runs_last80p);
+        System.arraycopy(benchResults, (int)(Math.floor(benchResults.length*0.2)), benchResults_last80p, 0, benchResults_last80p.length);
 
-        // Sort the results ascending (the least element goes to position 0, etc.)
-        benchResults = Arrays.stream(benchResults).sorted().toArray();
-        benchResults_last80p = Arrays.stream(benchResults_last80p).sorted().toArray();
-
-
-        // --- STATISTICS CALCULATIONS ---
-        final long min = benchResults[0]; // Minimum
-        final long max = benchResults[runs-1]; // Maximum
-
-        Apint timeSum = new Apint(0); // Sum of all runtimes
-        for(int i = 0; i < runs; i++) {
-          timeSum = timeSum.add(new Apint(benchResults[i]));
-        }
-        final long mean = Long.parseLong(timeSum.divide(new Apint(runs)).toString()); // Mean
-
-        // Quartile formula: `(x/4)*(n+1)`th term, where x = 1 for Q1, x = 2 for median, and x = 3 for Q3
-        // Form used below: `(n+1)*(x/4)` where `x/4` is in decimal form
-        final double q1pos = ((runs+1)*0.25)-1; // Doubles are accurate enough in [2^31 - 1, 2^32 - 1] for this usecase.
-        final double medianpos = ((runs+1)*0.50)-1; // -1 at the end because arrays are zero-indexed. The quartile fmla.
-        final double q3pos = ((runs+1)*0.75)-1;     // only gives answers assuming 1-indexing of elements
-        long q1, median, q3; // Have to define these beforehand due to scoping issues
-
-        if(q1pos - (int)q1pos < 0.1) { // Q1 is at data[q1pos] exactly.
-          q1 = benchResults[(int)q1pos];
-        } else { // If Q1 isn't exactly at q1pos, average the values adjacent to it
-          q1 = (benchResults[(int)(q1pos+1)] + benchResults[(int)q1pos]) / 2;
-        }
-
-        if(medianpos - (int)medianpos < 0.1) { // Median is at data[medianpos] exactly.
-          median = benchResults[(int)medianpos];
-        } else { // If median isn't exactly at medianpos, average the values adjacent to it
-          median = (benchResults[(int)(medianpos+1)] + benchResults[(int)medianpos]) / 2;
-        }
-
-        if(q3pos - (int)q3pos < 0.1) { // Q3 is at data[q3pos] exactly.
-          q3 = benchResults[(int)q3pos];
-        } else { // If Q3 isn't exactly at q3pos, average the values adjacent to it
-          q3 = (benchResults[(int)(q3pos+1)] + benchResults[(int)q3pos]) / 2;
-        }
-
-        // Population standard deviation calculation
-        Apint unnormalizedVariance = new Apint(0);
-        for(int i = 0; i < runs; i++) { // Compute unnormalized variance = Σ(X - μ)^2
-          unnormalizedVariance = unnormalizedVariance
-              .add(ApintMath.pow(new Apint(benchResults[i] - mean), 2));
-        }
-
-        // Calculate stddev to 20 sigfigs (we can't possibly need more than 20 right?)
-        // Computes sqrt(u/runs) where u = unnormalized variance; array access [0] because we don't care about the
-        // remainder from integer square rooting (since we're dealing in nanoseconds so it isn't significant)
-        long stddev = Long.parseLong(ApintMath.sqrt(unnormalizedVariance.divide(new Apint(runs)))[0].toString());
-
-        // TEMP: use dummy values to test printing system
-        //int runs = 9189;
-        //long mean = 83675700;
-        //long min = 53345700;
-        //long q1 = 81283300;
-        //long median = 102467700;
-        //long q3 = 129848400;
-        //long max = 152467600;
-        //long stddev = 5567;
-        //Apint timeSum = new Apint("123456786789"); // in nanoseconds
-        Apint remainder = timeSum;
-        int timeSum_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
-        remainder = remainder.mod(new Apint("3600000000000"));
-        short timeSum_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
-        remainder = remainder.mod(new Apint("60000000000"));
-        short timeSum_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
-        remainder = remainder.mod(new Apint("1000000000"));
-        short timeSum_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
-
-        //int runs_last80p = 7678;
-        long mean_last80p = 83675700;
-        long min_last80p = 53345700;
-        long q1_last80p = 81283300;
-        long median_last80p = 102467700;
-        long q3_last80p = 129848400;
-        long max_last80p = 152467600;
-        long stddev_last80p = 5567;
-        Apint timeSum_last80p = new Apint("123456786789");
-        remainder = timeSum_last80p;
-        int timeSum_last80p_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
-        remainder = remainder.mod(new Apint("3600000000000"));
-        short timeSum_last80p_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
-        remainder = remainder.mod(new Apint("60000000000"));
-        short timeSum_last80p_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
-        remainder = remainder.mod(new Apint("1000000000"));
-        short timeSum_last80p_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
-
+        // Compute statistical variables on our runtime data
+        Statistics allRuns = new Statistics(benchResults);
+        Statistics last80p = new Statistics(benchResults_last80p);
 
         // --- PRINTING ---
 
@@ -189,35 +88,35 @@ public class Main {
         Nanosecond -> Second     : *.000000001
 
         The goal is to have benchmark stats be printed in this pretty and predictable format:
-        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-        ┃ Benchmark results (runtime, all runs):          ┃ Benchmark results (runtime, last 80% of runs):  ┃
-        ┃  * Runs     : X[...]                            ┃  * Runs     : X[...]                            ┃
-        ┃  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┠─────────────────────────────────────────────────╂─────────────────────────────────────────────────┨
-        ┃  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  ┃
-        ┃  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  ┃  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  ┃
-        ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+        ┏-------------------------------------------------┳-------------------------------------------------┓
+        | Benchmark results (runtime, all runs):          | Benchmark results (runtime, last 80% of runs):  |
+        |  * Runs     : X[...]                            |  * Runs     : X[...]                            |
+        |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
+        ┠-------------------------------------------------╂-------------------------------------------------┨
+        |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
+        |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
+        |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
+        |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
+        |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
+        |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
+        |  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  |  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  |
+        ┗-------------------------------------------------┻-------------------------------------------------┛
         */
 
         System.out.println("\n");
-        System.out.println("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
-        System.out.println("┃ Benchmark results (runtime, all runs):          ┃ Benchmark results (runtime, last 80% of runs):  ┃");
-        System.out.printf ("┃  * Runs     : %-32d  ┃  * Runs     : %-32d  ┃\n", runs, runs_last80p);
-        System.out.printf ("┃  * Mean     : %-11.3f ms / %-12.1f μs  ┃  * Mean     : %-11.3f ms / %-12.1f μs  ┃\n", mean*.000001, mean*.001, mean_last80p*.000001, mean_last80p*.001);
-        System.out.println("┠─────────────────────────────────────────────────╂─────────────────────────────────────────────────┨");
-        System.out.printf ("┃  * Min      : %-11.3f ms / %-12.1f μs  ┃  * Min      : %-11.3f ms / %-12.1f μs  ┃\n", min*.000001, min*.001, min_last80p*.000001, min_last80p*.001);
-        System.out.printf ("┃  * Q1       : %-11.3f ms / %-12.1f μs  ┃  * Q1       : %-11.3f ms / %-12.1f μs  ┃\n", q1*.000001, q1*.001, q1_last80p*.000001, q1_last80p*.001);
-        System.out.printf ("┃  * Median   : %-11.3f ms / %-12.1f μs  ┃  * Median   : %-11.3f ms / %-12.1f μs  ┃\n", median*.000001, median*.001, median_last80p*.000001, median_last80p*.001);
-        System.out.printf ("┃  * Q3       : %-11.3f ms / %-12.1f μs  ┃  * Q3       : %-11.3f ms / %-12.1f μs  ┃\n", q3*.000001, q3*.001, q3_last80p*.000001, q3_last80p*.001);
-        System.out.printf ("┃  * Max      : %-11.3f ms / %-12.1f μs  ┃  * Max      : %-11.3f ms / %-12.1f μs  ┃\n", max*.000001, max*.001, max_last80p*.000001, max_last80p*.001);
-        System.out.printf ("┃  * Stddev[σ]: %-11.3f ms / %-12.1f μs  ┃  * Stddev[σ]: %-11.3f ms / %-12.1f μs  ┃\n", stddev*.000001, stddev*.001, stddev_last80p*.000001, stddev_last80p*.001);
-        System.out.printf ("┃  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  ┃  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  ┃\n", Double.parseDouble(timeSum.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_h, timeSum_m, timeSum_s, timeSum_ms, Double.parseDouble(timeSum_last80p.multiply(new Apfloat(".000000001", 10)).toString()), timeSum_last80p_h, timeSum_last80p_m, timeSum_last80p_s, timeSum_last80p_ms);
-        System.out.println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
+        System.out.println("+-------------------------------------------------+-------------------------------------------------+");
+        System.out.println("| Benchmark results (runtime, all runs):          | Benchmark results (runtime, last 80% of runs):  |");
+        System.out.printf ("|  * Runs     : %-32d  |  * Runs     : %-32d  |\n", allRuns.getRuns(), last80p.getRuns());
+        System.out.printf ("|  * Mean     : %-11.3f ms / %-12.1f µs  |  * Mean     : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMean()*.000001, allRuns.getMean()*.001, last80p.getMean()*.000001, last80p.getMean()*.001);
+        System.out.println("|-------------------------------------------------+-------------------------------------------------|");
+        System.out.printf ("|  * Min      : %-11.3f ms / %-12.1f µs  |  * Min      : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMin()*.000001, allRuns.getMin()*.001, last80p.getMin()*.000001, last80p.getMin()*.001);
+        System.out.printf ("|  * Q1       : %-11.3f ms / %-12.1f µs  |  * Q1       : %-11.3f ms / %-12.1f µs  |\n", allRuns.getQ1()*.000001, allRuns.getQ1()*.001, last80p.getQ1()*.000001, last80p.getQ1()*.001);
+        System.out.printf ("|  * Median   : %-11.3f ms / %-12.1f µs  |  * Median   : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMedian()*.000001, allRuns.getMedian()*.001, last80p.getMedian()*.000001, last80p.getMedian()*.001);
+        System.out.printf ("|  * Q3       : %-11.3f ms / %-12.1f µs  |  * Q3       : %-11.3f ms / %-12.1f µs  |\n", allRuns.getQ3()*.000001, allRuns.getQ3()*.001, last80p.getQ3()*.000001, last80p.getQ3()*.001);
+        System.out.printf ("|  * Max      : %-11.3f ms / %-12.1f µs  |  * Max      : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMax()*.000001, allRuns.getMax()*.001, last80p.getMax()*.000001, last80p.getMax()*.001);
+        System.out.printf ("|  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |\n", allRuns.getStddev()*.000001, allRuns.getStddev()*.001, last80p.getStddev()*.000001, last80p.getStddev()*.001);
+        System.out.printf ("|  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |\n", Double.parseDouble(allRuns.getTimeSum().multiply(new Apfloat(".000000001", 10)).toString()), allRuns.getTimeSum_h(), allRuns.getTimeSum_m(), allRuns.getTimeSum_s(), allRuns.getTimeSum_ms(), Double.parseDouble(last80p.getTimeSum().multiply(new Apfloat(".000000001", 10)).toString()), last80p.getTimeSum_h(), last80p.getTimeSum_m(), last80p.getTimeSum_s(), last80p.getTimeSum_ms());
+        System.out.println("+-------------------------------------------------+-------------------------------------------------+");
 
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
@@ -273,7 +172,7 @@ public class Main {
       // Print the amount of time this iteration took to execute in both milliseconds and microseconds as both may be useful.
       System.out.printf("Iteration " +
           String.format("%-" + Integer.toString(iterations).length() + "d", i + 1) +
-          ": %.3f ms / %.1f μs\n", execTimes[i]*.000001, execTimes[i]*.001);
+          ": %.3f ms / %.1f µs\n", execTimes[i]*.000001, execTimes[i]*.001);
       // Explanation of the `String.format` line in the above mess: Java's printf does not support padding chars other than 0 and space.
       // So, I have to replace the spaces produced by printf with dots myself with `.replace`.
       // The format string left-aligns the iteration number integer, then pads it to the max number of digits any iteration # will have.

@@ -2,4 +2,6 @@
 input*.txt
 
 # Build artifacts
+out/
 *.class
+*.jar
