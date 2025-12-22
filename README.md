@@ -27,4 +27,4 @@ An LLM was never used to generate significant amounts of code that I already kno
 
 
 ## Licensing
-All code in this repository was written by me, except libraries, the occasional Stack Overflow snippet (cited when appropriate), and the occasional LLM-produced trick. All is distributed under the [MIT License.](./LICENSE)
+All code in this repository was written by me except the occasional Stack Overflow snippet (cited when appropriate) and the occasional LLM-produced trick. All is distributed under the [MIT License.](./LICENSE)
