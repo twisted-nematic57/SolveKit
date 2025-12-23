@@ -23,7 +23,7 @@ public class Main {
     //  * Y is the part number (always == 1 or 2)
     //  * Z is the test number (always 1 digit)
     //  * If the letter "B" is present after Z, we need to benchmark the solution N times, where N
-    //    is an integer of whatever length.
+    //    is an integer in the range [0, (2^31)-1].
 
     // TODO: later when benchmarking code is factored out, pass this as an arg to a method in BenchmarkReporter
     boolean saveBenchResultsToCSV;
@@ -125,9 +125,10 @@ public class Main {
     // Load input for the problem and testcase.
     List<String> input = loadInput(year, day, part, test);
 
-    // Do some voodoo to be able to call the solution's main method
+    // Do some reflection voodoo to be able to call the solution's main method
     Class<?> solutionClass = Class.forName(String.format("y%d_d%02dp%d", year, day, part));
-    Method solutionMain = solutionClass.getMethod("main", List.class,  boolean.class);
+    Method solutionMain = solutionClass.getMethod("main", List.class, boolean.class);
+    solutionMain.setAccessible(true); // Make reflection-based method calling faster (you SHOULD NOT BE USING --add-opens)
 
     long[] execTimes = new long[iterations];
     for(int i = 0; i < iterations; i++) { // Run the solution `iterations` times and record execution time of each iteration
@@ -136,12 +137,10 @@ public class Main {
       execTimes[i] = System.nanoTime() - tickStart;
 
       // Print the amount of time this iteration took to execute in both milliseconds and microseconds as both may be useful.
+      // The format string left-aligns the iteration number integer, then pads it to the max number of digits any iteration # will have.
       System.out.printf("Iteration " +
           String.format("%-" + Integer.toString(iterations).length() + "d", i + 1) +
-          ": %.3f ms / %.1f µs\n", execTimes[i]*.000001, execTimes[i]*.001);
-      // Explanation of the `String.format` line in the above mess: Java's printf does not support padding chars other than 0 and space.
-      // So, I have to replace the spaces produced by printf with dots myself with `.replace`.
-      // The format string left-aligns the iteration number integer, then pads it to the max number of digits any iteration # will have.
+          ": %.3f ms / %.1f µs\n", UnitConverter.ns_ms(execTimes[i]), UnitConverter.ns_us(execTimes[i]));
     }
 
     return execTimes; // Return array of all execution times
