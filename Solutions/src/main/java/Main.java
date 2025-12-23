@@ -6,18 +6,17 @@
  *                 solutions using reflection.                                *
 \******************************************************************************/
 
-import org.apfloat.Apfloat; // For accurate statistics calculations
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class Main {
-  static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+  static void main(String[] args) throws Exception {
     // Arg (singular) will look like this: "yYYYY_dXXpY_Z[BN[...]]"
     //  * YYYY is the year
     //  * XX is the day (always 2 digits)
@@ -25,6 +24,15 @@ public class Main {
     //  * Z is the test number (always 1 digit)
     //  * If the letter "B" is present after Z, we need to benchmark the solution N times, where N
     //    is an integer of whatever length.
+
+    // TODO: later when benchmarking code is factored out, pass this as an arg to a method in BenchmarkReporter
+    boolean saveBenchResultsToCSV;
+    if(args[0].contains("S")) { // We must save benchmark results to CSV
+      saveBenchResultsToCSV = true;
+      args[0] = args[0].replace("S", ""); // To make code down the line look a little cleaner
+    } else {
+      saveBenchResultsToCSV = false;
+    }
 
     if(!args[0].contains("B")) { // --- RUNNING SOLUTION ONCE ---
       long runtime = RunSolution(
@@ -35,7 +43,7 @@ public class Main {
 
       if(runtime != -1) { // In general, if something == -1 in the runner then something has gone wrong; likely an inexistent problem has been input.
         System.out.println("\n---------------------------------------------------");
-        System.out.printf("Runtime: %.3f ms", runtime*.000001); // Convert to milliseconds before printing, easier to read
+        System.out.printf("Runtime: %.3f ms", UnitConverter.ns_ms(runtime));
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
@@ -51,9 +59,20 @@ public class Main {
 
       if(benchResults[0] != -1) {
         System.out.println("\n---------------------------------------------------");
-        System.out.println("Calculating statistics...");
+        System.out.println("Calculating statistics...\n");
         // Process benchmarking results and statistics:
         // One about the entire list of exec times and one about the last 80% (to account for JVM warmup, optimization & stabilization)
+
+        // If we're supposed to save the data to a CSV, then save it
+        try {
+          if(saveBenchResultsToCSV) {
+            long now = Instant.now().getEpochSecond(); // Current Unix timestamp
+            BenchmarkReporter.saveToCSV(benchResults, now);
+            System.out.println("Benchmark results saved to runtimes_" + now + ".csv in inputs directory.\n");
+          }
+        } catch (IOException e) {
+          System.out.println("Couldn't save benchmark results to CSV. Error details:\n" + e.getMessage() + "\n");
+        }
 
         // Make an array of length 80% of benchResults
         long[] benchResults_last80p = new long[(int)(Math.ceil(benchResults.length*0.8))];
@@ -64,62 +83,12 @@ public class Main {
         Statistics allRuns = new Statistics(benchResults);
         Statistics last80p = new Statistics(benchResults_last80p);
 
-        // --- PRINTING ---
-
-        /* Expected datatypes & formats before printing begins:
-         - Runs:      int, unitless
-         - Mean:      long, nanoseconds
-         - Min:       long, nanoseconds
-         - Q1:        long, nanoseconds
-         - Median:    long, nanoseconds
-         - Q3:        long, nanoseconds
-         - Max:       long, nanoseconds
-         - Stddev:    long, nanoseconds
-         - Σ(time):   Apint, nanoseconds
-        Time sums are accompanied by sets of four ints representing hours, minutes, seconds and milliseconds.
-        Individual time sum components are labeled with _h, _m, _s, and _ms respectively.
-        All of the above are repeated once again for the last 80% of runs.
-
-        Conversions:
-        Nanosecond -> Microsecond: *.001
-        Nanosecond -> Millisecond: *.000001
-        Nanosecond -> Second     : *.000000001
-
-        The goal is to have benchmark stats be printed in this pretty and predictable format:
-        +-------------------------------------------------+-------------------------------------------------+
-        | Benchmark results (runtime, all runs):          | Benchmark results (runtime, last 80% of runs):  |
-        |  * Runs     : X[...]                            |  * Runs     : X[...]                            |
-        |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
-        |-------------------------------------------------+-------------------------------------------------|
-        |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
-        |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
-        |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
-        |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
-        |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
-        |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
-        |  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  |  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  |
-        +-------------------------------------------------+-------------------------------------------------+
-        */
-
-        System.out.println("\n");
-        System.out.println("+-------------------------------------------------+-------------------------------------------------+");
-        System.out.println("| Benchmark results (runtime, all runs):          | Benchmark results (runtime, last 80% of runs):  |");
-        System.out.printf ("|  * Runs     : %-32d  |  * Runs     : %-32d  |\n", allRuns.getRuns(), last80p.getRuns());
-        System.out.printf ("|  * Mean     : %-11.3f ms / %-12.1f µs  |  * Mean     : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMean()), UnitConverter.ns_us(allRuns.getMean()), UnitConverter.ns_ms(last80p.getMean()), UnitConverter.ns_us(last80p.getMean()));
-        System.out.println("|-------------------------------------------------+-------------------------------------------------|");
-        System.out.printf ("|  * Min      : %-11.3f ms / %-12.1f µs  |  * Min      : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMin()), UnitConverter.ns_us(allRuns.getMin()), UnitConverter.ns_ms(last80p.getMin()), UnitConverter.ns_us(last80p.getMin()));
-        System.out.printf ("|  * Q1       : %-11.3f ms / %-12.1f µs  |  * Q1       : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getQ1()), UnitConverter.ns_us(allRuns.getQ1()), UnitConverter.ns_ms(last80p.getQ1()), UnitConverter.ns_us(last80p.getQ1()));
-        System.out.printf ("|  * Median   : %-11.3f ms / %-12.1f µs  |  * Median   : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMedian()), UnitConverter.ns_us(allRuns.getMedian()), UnitConverter.ns_ms(last80p.getMedian()), UnitConverter.ns_us(last80p.getMedian()));
-        System.out.printf ("|  * Q3       : %-11.3f ms / %-12.1f µs  |  * Q3       : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getQ3()), UnitConverter.ns_us(allRuns.getQ3()), UnitConverter.ns_ms(last80p.getQ3()), UnitConverter.ns_us(last80p.getQ3()));
-        System.out.printf ("|  * Max      : %-11.3f ms / %-12.1f µs  |  * Max      : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMax()), UnitConverter.ns_us(allRuns.getMax()), UnitConverter.ns_ms(last80p.getMax()), UnitConverter.ns_us(last80p.getMax()));
-        System.out.printf ("|  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getStddev()), UnitConverter.ns_us(allRuns.getStddev()), UnitConverter.ns_ms(last80p.getStddev()), UnitConverter.ns_us(last80p.getStddev()));
-        System.out.printf ("|  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |\n", UnitConverter.ns_s(allRuns.getTimeSum()), allRuns.getTimeSum_h(), allRuns.getTimeSum_m(), allRuns.getTimeSum_s(), allRuns.getTimeSum_ms(), UnitConverter.ns_s(last80p.getTimeSum()), last80p.getTimeSum_h(), last80p.getTimeSum_m(), last80p.getTimeSum_s(), last80p.getTimeSum_ms());
-        System.out.println("+-------------------------------------------------+-------------------------------------------------+");
+        // Print the pretty stats table
+        BenchmarkReporter.showBenchmarkResults(allRuns, last80p);
       } else {
-        System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
+        System.out.println("\nThe solution couldn't be run. Are you sure the specified solution exists?");
       }
     }
-
   }
 
 

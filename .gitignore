@@ -1,5 +1,6 @@
-# AdventOfCode's creator specifically requests that input not be distributed by users
-input*.txt
+# Advent of Code's creator specifically requests that input not be distributed by users
+# inputs/ also possibly contains generated CSV files which definitely aren't source code.
+inputs/
 
 # Build artifacts
 out/
