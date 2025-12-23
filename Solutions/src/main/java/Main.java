@@ -9,10 +9,8 @@
 import org.apfloat.Apfloat; // For accurate statistics calculations
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -82,42 +80,41 @@ public class Main {
         Individual time sum components are labeled with _h, _m, _s, and _ms respectively.
         All of the above are repeated once again for the last 80% of runs.
 
-        Conversions (TODO: refactor this into a UnitConverter class):
+        Conversions:
         Nanosecond -> Microsecond: *.001
         Nanosecond -> Millisecond: *.000001
         Nanosecond -> Second     : *.000000001
 
         The goal is to have benchmark stats be printed in this pretty and predictable format:
-        ┏-------------------------------------------------┳-------------------------------------------------┓
+        +-------------------------------------------------+-------------------------------------------------+
         | Benchmark results (runtime, all runs):          | Benchmark results (runtime, last 80% of runs):  |
         |  * Runs     : X[...]                            |  * Runs     : X[...]                            |
-        |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
-        ┠-------------------------------------------------╂-------------------------------------------------┨
-        |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
-        |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
-        |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
-        |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
-        |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
-        |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X µs  |
-        |  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  |  * Σ(time)  : XXXXXXX.XXX s /   HHHH:MM:SS.III  |
-        ┗-------------------------------------------------┻-------------------------------------------------┛
+        |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Mean     : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
+        |-------------------------------------------------+-------------------------------------------------|
+        |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Min      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
+        |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Q1       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
+        |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Median   : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
+        |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Q3       : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
+        |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Max      : XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
+        |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |  * Stddev[σ]: XXXXXXX.XXX ms / XXXXXXXXXX.X μs  |
+        |  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  |  * Σ(time)  : XXXXXXX.XXX  s /  HHHH:MM:SS.III  |
+        +-------------------------------------------------+-------------------------------------------------+
         */
 
         System.out.println("\n");
         System.out.println("+-------------------------------------------------+-------------------------------------------------+");
         System.out.println("| Benchmark results (runtime, all runs):          | Benchmark results (runtime, last 80% of runs):  |");
         System.out.printf ("|  * Runs     : %-32d  |  * Runs     : %-32d  |\n", allRuns.getRuns(), last80p.getRuns());
-        System.out.printf ("|  * Mean     : %-11.3f ms / %-12.1f µs  |  * Mean     : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMean()*.000001, allRuns.getMean()*.001, last80p.getMean()*.000001, last80p.getMean()*.001);
+        System.out.printf ("|  * Mean     : %-11.3f ms / %-12.1f µs  |  * Mean     : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMean()), UnitConverter.ns_us(allRuns.getMean()), UnitConverter.ns_ms(last80p.getMean()), UnitConverter.ns_us(last80p.getMean()));
         System.out.println("|-------------------------------------------------+-------------------------------------------------|");
-        System.out.printf ("|  * Min      : %-11.3f ms / %-12.1f µs  |  * Min      : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMin()*.000001, allRuns.getMin()*.001, last80p.getMin()*.000001, last80p.getMin()*.001);
-        System.out.printf ("|  * Q1       : %-11.3f ms / %-12.1f µs  |  * Q1       : %-11.3f ms / %-12.1f µs  |\n", allRuns.getQ1()*.000001, allRuns.getQ1()*.001, last80p.getQ1()*.000001, last80p.getQ1()*.001);
-        System.out.printf ("|  * Median   : %-11.3f ms / %-12.1f µs  |  * Median   : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMedian()*.000001, allRuns.getMedian()*.001, last80p.getMedian()*.000001, last80p.getMedian()*.001);
-        System.out.printf ("|  * Q3       : %-11.3f ms / %-12.1f µs  |  * Q3       : %-11.3f ms / %-12.1f µs  |\n", allRuns.getQ3()*.000001, allRuns.getQ3()*.001, last80p.getQ3()*.000001, last80p.getQ3()*.001);
-        System.out.printf ("|  * Max      : %-11.3f ms / %-12.1f µs  |  * Max      : %-11.3f ms / %-12.1f µs  |\n", allRuns.getMax()*.000001, allRuns.getMax()*.001, last80p.getMax()*.000001, last80p.getMax()*.001);
-        System.out.printf ("|  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |\n", allRuns.getStddev()*.000001, allRuns.getStddev()*.001, last80p.getStddev()*.000001, last80p.getStddev()*.001);
-        System.out.printf ("|  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |\n", Double.parseDouble(allRuns.getTimeSum().multiply(new Apfloat(".000000001", 10)).toString()), allRuns.getTimeSum_h(), allRuns.getTimeSum_m(), allRuns.getTimeSum_s(), allRuns.getTimeSum_ms(), Double.parseDouble(last80p.getTimeSum().multiply(new Apfloat(".000000001", 10)).toString()), last80p.getTimeSum_h(), last80p.getTimeSum_m(), last80p.getTimeSum_s(), last80p.getTimeSum_ms());
+        System.out.printf ("|  * Min      : %-11.3f ms / %-12.1f µs  |  * Min      : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMin()), UnitConverter.ns_us(allRuns.getMin()), UnitConverter.ns_ms(last80p.getMin()), UnitConverter.ns_us(last80p.getMin()));
+        System.out.printf ("|  * Q1       : %-11.3f ms / %-12.1f µs  |  * Q1       : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getQ1()), UnitConverter.ns_us(allRuns.getQ1()), UnitConverter.ns_ms(last80p.getQ1()), UnitConverter.ns_us(last80p.getQ1()));
+        System.out.printf ("|  * Median   : %-11.3f ms / %-12.1f µs  |  * Median   : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMedian()), UnitConverter.ns_us(allRuns.getMedian()), UnitConverter.ns_ms(last80p.getMedian()), UnitConverter.ns_us(last80p.getMedian()));
+        System.out.printf ("|  * Q3       : %-11.3f ms / %-12.1f µs  |  * Q3       : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getQ3()), UnitConverter.ns_us(allRuns.getQ3()), UnitConverter.ns_ms(last80p.getQ3()), UnitConverter.ns_us(last80p.getQ3()));
+        System.out.printf ("|  * Max      : %-11.3f ms / %-12.1f µs  |  * Max      : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getMax()), UnitConverter.ns_us(allRuns.getMax()), UnitConverter.ns_ms(last80p.getMax()), UnitConverter.ns_us(last80p.getMax()));
+        System.out.printf ("|  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |  * Stddev[σ]: %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(allRuns.getStddev()), UnitConverter.ns_us(allRuns.getStddev()), UnitConverter.ns_ms(last80p.getStddev()), UnitConverter.ns_us(last80p.getStddev()));
+        System.out.printf ("|  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |  * Σ(time)  : %-11.3f  s /  %4d:%02d:%02d.%03d  |\n", UnitConverter.ns_s(allRuns.getTimeSum()), allRuns.getTimeSum_h(), allRuns.getTimeSum_m(), allRuns.getTimeSum_s(), allRuns.getTimeSum_ms(), UnitConverter.ns_s(last80p.getTimeSum()), last80p.getTimeSum_h(), last80p.getTimeSum_m(), last80p.getTimeSum_s(), last80p.getTimeSum_ms());
         System.out.println("+-------------------------------------------------+-------------------------------------------------+");
-
       } else {
         System.out.println("\nSomething went wrong and the solution couldn't be run. Are you sure the specified problem exists?");
       }
