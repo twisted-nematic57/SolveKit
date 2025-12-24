@@ -22,9 +22,9 @@ public class Statistics {
   private long stddev; // Population, not sample, since sample makes no sense for our case
   private Apint timeSum;
   private int timeSum_h;
-  private short timeSum_m;
-  private short timeSum_s;
-  private short timeSum_ms;
+  private int timeSum_m;
+  private int timeSum_s;
+  private int timeSum_ms;
 
   // As soon as the class is constructed, calculate statistics about it.
   // data is expected to be an unsorted array of longs.
@@ -81,11 +81,11 @@ public class Statistics {
     Apint remainder = timeSum;
     timeSum_h = Integer.parseInt(remainder.divide(new Apint("3600000000000")).toString());
     remainder = remainder.mod(new Apint("3600000000000"));
-    timeSum_m = (short)Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
+    timeSum_m = Integer.parseInt(remainder.divide(new Apint("60000000000")).toString());
     remainder = remainder.mod(new Apint("60000000000"));
-    timeSum_s = (short)Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
+    timeSum_s = Integer.parseInt(remainder.divide(new Apint("1000000000")).toString());
     remainder = remainder.mod(new Apint("1000000000"));
-    timeSum_ms = (short)Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
+    timeSum_ms = Integer.parseInt(remainder.divide(new Apint("1000000")).toString());
   }
 
   public int getRuns() {
@@ -128,15 +128,15 @@ public class Statistics {
     return timeSum_h;
   }
 
-  public short getTimeSum_m() {
+  public int getTimeSum_m() {
     return timeSum_m;
   }
 
-  public short getTimeSum_s() {
+  public int getTimeSum_s() {
     return timeSum_s;
   }
 
-  public short getTimeSum_ms() {
+  public int getTimeSum_ms() {
     return timeSum_ms;
   }
 }

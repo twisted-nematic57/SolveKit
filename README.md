@@ -9,8 +9,10 @@ Planned platform support:
  * [Project Euler](https://projecteuler.net/)
  * [CodeForces](https://codeforces.com/)*
  * [AtCoder](https://atcoder.jp/home)* ([Problem List](https://kenkoooo.com/atcoder/#/table/))
+ * [Sphere Online Judge (aka SPOJ)](https://www.spoj.com/problems/classical/)*
+ * [UVa Online Judge](https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8)*
 
-`*`: The platform technically does not support Java 25, which is the language version that this project is configured to use. Make sure to stick to the appropriate feature set supported by that platform and the specific problem you're solving.
+`*`: The platform does not support Java 25, which is the language version that this project is configured to use. Make sure to stick to the appropriate feature set supported by that platform and the specific problem you're solving.
 
 ## How to Use
 1. Clone this repo. Open its root dir in IntelliJ IDEA.
@@ -20,25 +22,25 @@ Planned platform support:
 ### What format should my solutions be in?
 There are some website-specific (I call it "platform-specific") differences, but generally:
  * Keep each solution contained in its own single source file. To do this, make only the class that contains the main method public. Where the code flows from the main method is platform-dependent.
- * The class that contains the main method for each solution must follow a certain pattern or otherwise correspond with an identifier for the problem that the solution is for. This makes it easy to keep track of what solution it is at a glance.
+ * The name of the class that contains the main method for each solution must follow a certain pattern or otherwise correspond with an identifier for the problem that the solution is for. This makes it easy to keep track of what solution it is at a glance. Also, **solution class names should not contain underscores!**
 
 
 ### Platform-Specific Differences
- * For **Advent of Code:** You can essentially use whatever code structure you like as long as it stays contained in one file. **Remember that this "one-file rule" is applicable to all platforms.** Input will be provided in an array of strings. Remember to print your output at the end!
+ * For **Advent of Code:** You can essentially use whatever code structure you like as long as each solution stays contained in one file. **Remember that this "one-file rule" is applicable to all platforms.** Input will be provided in an array of strings. Remember to print your output at the end!
  * For **LeetCode:**
    * As LeetCode does not provide full testcases to the public, you're going to be running your code on the short tests that they make publicly available.
    * So, in the main method, you are to create a switch case that sets your input variables to different values depending on the test #. If you aren't using a certain test # in the switch, just leave it unhandled. Don't forget your `break;` statements!
    * Write the method they expect you to write below the main method. Name it what they name it and copy its parameter names & types exactly - you defined these earlier in the main method.
-     * If it's a special question that requires you to implement an entire class, then write the class normally. In the next step, call it the way that LeetCode says they will call it from the main method in the public class.
+     * If it's a special question that requires you to implement an entire class, then write the class using the `class ... {` form they expect below the solution's public class. In the next step, call it the way that LeetCode says they will call it from the main method in the public class.
    * Now at the very end of the main method, call the method you wrote with the arguments you set in the switch case.
  * For **Project Euler:** Use whatever code structure you like, following the one-file rule. There will be no "input" for Project Euler problems because they heavily emphasize mathematical rigor over large amounts of input processing.
- * For **CodeForces** and **AtCoder:**
-   * Both platforms expect you to submit solutions in one file using the standard `public class Main { public static void main(...` format. When developing with SolveKit, name the class something other than Main, preferably an identifier for the problem you're solving. Then when you submit your solution, just remember to change the class name back to Main.
-   * Both platforms also use stdin/out for I/O. Input will be sent to stdin from text files in the `inputs` directory by SolveKit. You can do output the same way you usually do.
+ * For **CodeForces, AtCoder, SPOJ** and **UVa Online Judge:**
+   * All of those platforms expect you to submit solutions in one file using the standard `public class Main { public static void main(...` format. When developing your solutions with SolveKit, name the class something other than Main, preferably an identifier for the problem you're solving. Then, when you submit your solution, just remember to change the public class's name back to Main.
+   * All of those platforms also use stdin/stdout for I/O. Input will be sent to stdin from text files in the `inputs` directory by SolveKit. You can do output the same way you usually do.
 
 
-### How to provide inputs for Advent of Code, CodeForces and AtCoder
-In the respective platform's subdirectory in [`inputs`](./inputs), there should be plaintext files that follow the following name format:
+### How to provide inputs for Advent of Code, CodeForces, AtCoder, SPOJ and UVa Online Judge
+In the respective platform's subdirectory in [`inputs`](./inputs), there should be plaintext files that adhere to the following name format:
 
 ```i_{ProblemSpecifier}_{Test#}.txt```
 

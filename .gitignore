@@ -1,6 +1,9 @@
-# Advent of Code's creator specifically requests that input not be distributed by users
-# inputs/ also possibly contains generated CSV files which definitely aren't source code.
-inputs/
+# Typically it's not good practice to include inputs in Git repositories. Problem writers (Like Advent of Code's) also
+# don't like people distributing their inputs.
+i_*
+
+# Ignore benchmarker-generated CSV outputs
+inputs/*.csv
 
 # Build artifacts
 out/
