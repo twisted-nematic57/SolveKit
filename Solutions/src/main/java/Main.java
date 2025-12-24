@@ -1,6 +1,3 @@
-import java.io.IOException;
-import java.time.Instant;
-
 /*** Main.java ****************************************************************\
  * Author:         twisted_nematic57                                          *
  * Date Created:   2025-11-26                                                 *
@@ -8,6 +5,9 @@ import java.time.Instant;
  *                 type and setting inputs. Runs, tests, or benchmarks        *
  *                 solutions using reflection.                                *
 \******************************************************************************/
+
+import java.io.IOException;
+import java.time.Instant;
 
 public class Main {
   static void main(String[] args) throws Exception {
@@ -44,7 +44,6 @@ public class Main {
         switch (platformName) {
           case "AdventOfCode":
             AdventOfCodePlatformHandler thisProblem = new AdventOfCodePlatformHandler();
-            String[] input = thisProblem.loadInput(thisSolution);
             runtime = thisProblem.runSolution(thisSolution); // Possible runtime exception for this is handled.
 
             // The solution will be responsible for printing its own output.
@@ -69,6 +68,10 @@ public class Main {
       } else { // Benchmarking mode
 
         int benchmarkingIterations = Integer.parseInt(args[0].substring(args[0].indexOf("B") + 1));
+        if(benchmarkingIterations <= 1) {
+          throw new IllegalArgumentException("Benchmarking iterations must be > 1");
+        }
+
         SolutionSpecifier thisSolution = new SolutionSpecifier(
             args[0].substring(args[0].indexOf(".") + 1, args[0].indexOf("-")),
             testNum
@@ -78,9 +81,6 @@ public class Main {
         switch (platformName) {
           case "AdventOfCode":
             AdventOfCodePlatformHandler thisProblem = new AdventOfCodePlatformHandler();
-            String[] input = thisProblem.loadInput(thisSolution);
-
-
             benchmarkRuntimes = thisProblem.benchmarkSolution(thisSolution, benchmarkingIterations);
 
             // If we're supposed to save the data to a CSV, then save it
@@ -122,10 +122,12 @@ public class Main {
         BenchmarkReporter.showBenchmarkResults(allRuns, last80p);
       }
     } catch(IOException e) {
-      System.out.println("\nError: The input file was not found. \n\nError details:\n" + e.getMessage());
+      System.out.println("\nError: The input file couldn't be opened. Does it exist?\n" + e.getMessage());
+    } catch(IllegalArgumentException e) {
+      System.out.println("\nError: Please supply a number of benchmarking iterations > 1.\n\nDetails:\n" + e.getMessage());
     } catch(Exception e) {
       System.out.println("\nError: Failed to run the solution. If you are in IntelliJ IDEA, try clicking anywhere in the" +
-          "solution source code window and try again. \n\nError details:\n" + e.getMessage());
+          " solution source code window and try again.\n\nError details:\n" + e.getMessage());
     }
 
     /*

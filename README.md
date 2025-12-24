@@ -22,11 +22,13 @@ Planned platform support:
 ### What format should my solutions be in?
 There are some website-specific (I call it "platform-specific") differences, but generally:
  * Keep each solution contained in its own single source file. To do this, make only the class that contains the main method public. Where the code flows from the main method is platform-dependent.
- * The name of the class that contains the main method for each solution must follow a certain pattern or otherwise correspond with an identifier for the problem that the solution is for. This makes it easy to keep track of what solution it is at a glance. Also, **solution class names should not contain underscores!**
+ * The name of the class that contains the main method for each solution must follow a certain pattern or otherwise correspond with an identifier for the problem that the solution is for. This makes it easy to keep track of what solution it is at a glance.
 
 
 ### Platform-Specific Differences
- * For **Advent of Code:** You can essentially use whatever code structure you like as long as each solution stays contained in one file. **Remember that this "one-file rule" is applicable to all platforms.** Input will be provided in an array of strings. Remember to print your output at the end!
+ * For **Advent of Code** and **Project Euler:** You can essentially use whatever code structure you like as long as you follow the standards in the sub-bullet points under this, and each solution stays contained in one file. **Remember that this "one-file rule" is applicable to all platforms.** Remember to print your output at the end!
+   * For Advent of Code, input will be provided in an array of strings as the first argument to your main method.
+   * The main method for both of these platforms will also have a boolean argument at the end called `verbose`. Because benchmarking will 
  * For **LeetCode:**
    * As LeetCode does not provide full testcases to the public, you're going to be running your code on the short tests that they make publicly available.
    * So, in the main method, you are to create a switch case that sets your input variables to different values depending on the test #. If you aren't using a certain test # in the switch, just leave it unhandled. Don't forget your `break;` statements!

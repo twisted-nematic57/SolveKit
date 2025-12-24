@@ -10,11 +10,12 @@
  *                 for new ones easily.                                       *
 \******************************************************************************/
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public interface PlatformHandler {
   // Used for platforms that rely on plaintext input via a file
-  default String[] loadInput(SolutionSpecifier thisSolution) {
+  default String[] loadInput(SolutionSpecifier thisSolution) throws IOException {
     return new String[0];
   }
 
@@ -22,8 +23,8 @@ public interface PlatformHandler {
   default void passStdIput(SolutionSpecifier thisSolution) { }
 
   // Runs the solution once. Returns the runtime of the solution in ns.
-  long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException;
+  long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException, IOException;
 
   // Runs the solution `iterations` times. Returns an array containing runtimes for each iteration.
-  long[] benchmarkSolution(SolutionSpecifier thisSolution, int iterations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException;
+  long[] benchmarkSolution(SolutionSpecifier thisSolution, int iterations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException;
 }

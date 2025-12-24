@@ -18,20 +18,18 @@ import java.util.stream.Stream;
 public class AdventOfCodePlatformHandler implements PlatformHandler {
   // Load input from an input file into an array of strings.
   @Override
-  public String[] loadInput(SolutionSpecifier thisSolution) {
+  public String[] loadInput(SolutionSpecifier thisSolution) throws IOException {
     List<String> input = List.of(); // Empty list
     try (Stream<String> lines = Files.lines(
         Path.of("adventofcode/i_" + thisSolution.name() + "_" + thisSolution.test() + ".txt"))) {
       input = lines.toList();
-    } catch (IOException e) {
-      System.out.println("\nCouldn't load input.\n" + e.getMessage());
     }
 
     return input.toArray(new String[input.size()]);
   }
 
   @Override
-  public long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException {
+  public long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException, IOException {
     // Load input for the problem and testcase.
     String[] input = loadInput(thisSolution);
 
@@ -41,14 +39,14 @@ public class AdventOfCodePlatformHandler implements PlatformHandler {
 
     // Call the solution and time it.
     long tickStart = System.nanoTime();
-    solutionMain.invoke(null, input);
+    solutionMain.invoke(null, new Object[] {input});
     return System.nanoTime() - tickStart; // Return execution time of entire solution
   }
 
   @Override
-  public long[] benchmarkSolution(SolutionSpecifier thisSolution, int iterations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public long[] benchmarkSolution(SolutionSpecifier thisSolution, int iterations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
     // Load input for the problem and testcase.
-    String[] input = loadInput(thisSolution);
+    Object[] input = new Object[] {loadInput(thisSolution)};
 
     // Do some reflection voodoo to be able to call the solution's main method
     Class<?> solutionClass = Class.forName("AdventOfCode." + thisSolution.name());
