@@ -20,7 +20,7 @@ public interface PlatformHandler {
   }
 
   // Used for platforms that rely on stdin for input
-  default void passStdIput(SolutionSpecifier thisSolution) { }
+  default void passStdInput(SolutionSpecifier thisSolution) throws IOException { }
 
   // Runs the solution once. Returns the runtime of the solution in ns.
   long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException, IOException;

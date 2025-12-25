@@ -27,9 +27,9 @@ public class Main {
         "AtCoder", "SPOJ", "UVa"};
 
     final boolean saveBenchResultsToCSV;
-    if(args[0].contains("S")) { // We must save benchmark results to CSV
+    if(args[0].charAt(args[0].length() - 1) == 'S') { // We must save benchmark results to CSV if there is an S at the end of the arg
       saveBenchResultsToCSV = true;
-      args[0] = args[0].replace("S", ""); // To make code down the line look a little cleaner
+      args[0] = args[0].substring(0, args[0].length()-1); // Chop off the S to make code down the line look a little cleaner
     } else {
       saveBenchResultsToCSV = false;
     }
@@ -38,9 +38,14 @@ public class Main {
     final boolean benchmarking;
     final String platformName;
     try {
-      testNum = Integer.parseInt(args[0].substring(args[0].indexOf("-")+1, args[0].indexOf("-")+2));
-      benchmarking = args[0].contains("B");
+      // Extract the platform name (only occurs before the ".")
       platformName = args[0].substring(0, args[0].indexOf("."));
+
+      // Extract the one-digit test number from the character that comes after "-"
+      testNum = Integer.parseInt(args[0].substring(args[0].indexOf("-")+1, args[0].indexOf("-")+2));
+
+      // Extract the benchmark flag from the part of the string after the "-"
+      benchmarking = args[0].substring(args[0].indexOf("-")+1).contains("B");
     } catch(Exception e) {
       System.out.println("Error parsing arguments.\n\nError details:\n" + e.getMessage());
       return;
@@ -86,8 +91,12 @@ public class Main {
             // The main method of the solution is responsible for printing a return value.
             break;
           case "Codeforces":
+            CodeforcesPlatformHandler cf = new CodeforcesPlatformHandler();
+            runtime = cf.runSolution(thisSolution);
             break;
           case "AtCoder":
+            AtCoderPlatformHandler ac = new AtCoderPlatformHandler();
+            runtime = ac.runSolution(thisSolution);
             break;
           case "SPOJ":
             break;
@@ -121,8 +130,12 @@ public class Main {
             benchmarkRuntimes = e.benchmarkSolution(thisSolution, benchmarkingIterations);
             break;
           case "Codeforces":
+            CodeforcesPlatformHandler cf = new CodeforcesPlatformHandler();
+            benchmarkRuntimes = cf.benchmarkSolution(thisSolution,  benchmarkingIterations);
             break;
           case "AtCoder":
+            AtCoderPlatformHandler ac = new AtCoderPlatformHandler();
+            benchmarkRuntimes = ac.benchmarkSolution(thisSolution,  benchmarkingIterations);
             break;
           case "SPOJ":
             break;
