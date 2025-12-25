@@ -1,0 +1,6 @@
+# This genius snippet sourced from https://stackoverflow.com/a/932982
+
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

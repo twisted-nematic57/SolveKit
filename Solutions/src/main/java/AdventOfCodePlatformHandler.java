@@ -21,7 +21,7 @@ public class AdventOfCodePlatformHandler implements PlatformHandler {
   public String[] loadInput(SolutionSpecifier thisSolution) throws IOException {
     List<String> input = List.of(); // Empty list
     try (Stream<String> lines = Files.lines(
-        Path.of("adventofcode/i_" + thisSolution.name() + "_" + thisSolution.test() + ".txt"))) {
+        Path.of("AdventOfCode/i_" + thisSolution.name() + "_" + thisSolution.test() + ".txt"))) {
       input = lines.toList();
     }
 
