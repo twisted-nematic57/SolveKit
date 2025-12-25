@@ -16,10 +16,10 @@ public class y2015_d01p1 {
         floor--;
       }
 
-      //System.out.println("Step = " + step + "; Current floor = " + String.format("% d", floor));
+      System.out.println("Step = " + step + "; Current floor = " + String.format("% d", floor));
     }
 
-    //System.out.println("\nFinal floor = " + floor);
+    System.out.println("\nFinal floor = " + floor);
   }
 }
 

@@ -21,10 +21,17 @@ Each solution can be run, tested on different sets of inputs (if applicable), an
 
 
 ## How to Use
-1. Clone this repo. Open it in IntelliJ IDEA.
+1. Clone this repo. Open it in IntelliJ IDEA. If necessary, go to File -> Project Settings and change the "SDK" setting to your Java 25 JDK.
 2. Under the package that matches the name of the platform you're creating a solution for, create a new Java class. Name it something meaningful, preferably an identifier for the problem you're solving.
    * e.g., a class called `y2025_d07p1` in package `AdventOfCode` for "Day 7, Part 1 of Advent of Code 2025".
-3. Write your solution based on the given template[TODO: link to non-spoiler samples] for your platform.
+3. Write your solution based on the sample solution for your platform. There are sample solutions in each platform's module. They solve the first and simplest problem of each platform, and illustrate what SolveKit expects of your solutions.
+   * **Advent of Code:** [Day 1, Part 1 of 2015](https://adventofcode.com/2015/day/1)
+   * **LeetCode:** [Problem #1 ("Two Sum")](https://leetcode.com/problems/two-sum/)
+   * **Project Euler:** [Problem #1 ("Multiples of 3 or 5")](https://projecteuler.net/problem=1)
+   * **CodeForces:** [Problem #1A ("A. Theatre Square")](https://codeforces.com/problemset/problem/1/A)
+   * **AtCoder:** [ABC424 - A - Isosceles](https://atcoder.jp/contests/abc424/tasks/abc424_a)
+   * **SPOJ:** [Life, the Universe, and Everything](https://www.spoj.com/problems/TEST/)
+   * **UVa Online Judge**: [100 - The 3n + 1 problem](https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=3&page=show_problem&problem=36)
 4. If your platform requires you to accept input data at runtime, and *it isn't LeetCode*:
    * In the respective platform's subdirectory in [`inputs`](./inputs), you must create plaintext files that adhere to the following name format: `i_{ProblemSpecifier}_{Test#}.txt`
    * All input file names start with `i_` and end with `.txt`.
