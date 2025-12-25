@@ -10,7 +10,7 @@ SolveKit is a template project for IntelliJ IDEA. It contains several packages, 
 * [Advent of Code](https://adventofcode.com/)
 * [LeetCode](https://leetcode.com/)
 * [Project Euler](https://projecteuler.net/)
-* [CodeForces](https://codeforces.com/)*
+* [Codeforces](https://codeforces.com/)*
 * [AtCoder](https://atcoder.jp/home)* ([Problem List](https://kenkoooo.com/atcoder/#/table/))
 * [Sphere Online Judge (aka SPOJ)](https://www.spoj.com/problems/classical/)*
 * [UVa Online Judge](https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8)*
@@ -28,7 +28,7 @@ Each solution can be run, tested on different sets of inputs (if applicable), an
    * **Advent of Code:** [Day 1, Part 1 of 2015](https://adventofcode.com/2015/day/1)
    * **LeetCode:** [Problem #1 ("Two Sum")](https://leetcode.com/problems/two-sum/)
    * **Project Euler:** [Problem #1 ("Multiples of 3 or 5")](https://projecteuler.net/problem=1)
-   * **CodeForces:** [Problem #1A ("A. Theatre Square")](https://codeforces.com/problemset/problem/1/A)
+   * **Codeforces:** [Problem #1A ("A. Theatre Square")](https://codeforces.com/problemset/problem/1/A)
    * **AtCoder:** [ABC424 - A - Isosceles](https://atcoder.jp/contests/abc424/tasks/abc424_a)
    * **SPOJ:** [Life, the Universe, and Everything](https://www.spoj.com/problems/TEST/)
    * **UVa Online Judge**: [100 - The 3n + 1 problem](https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=3&page=show_problem&problem=36)
@@ -62,12 +62,12 @@ There are some website-specific (I call it "platform-specific") differences, but
    * For Advent of Code, input will be provided in an array of strings as the first and only argument to your main method.
  * For **LeetCode:**
    * As LeetCode does not provide full testcases to the public, you're going to be running your code on the short tests that they make publicly available.
-   * So, in the main method, you are to create a switch case that sets your input variables to different values depending on the test #. If you aren't using a certain test # in the switch, just leave it unhandled. Don't forget your `break;` statements!
+   * So, in the main method, you are to create a switch case that sets your input variables to different values depending on the test #. If you aren't using a certain test # in the switch, just leave it unhandled.
    * Write the method they expect you to write below the main method. Name it what they name it and copy its parameter names & types exactly - you defined these earlier in the main method.
      * If it's a special question that requires you to implement an entire class, then write the class using the `class ... {` form they expect below the solution's public class. In the next step, call it the way that LeetCode says they will call it from the main method in the public class.
    * Now at the very end of the main method, call the method you wrote with the arguments you set in the switch case.
  * For **Project Euler:** Use whatever code structure you like, following the one-file rule. There will be no "input" for Project Euler problems because they heavily emphasize mathematical rigor over large amounts of input processing.
- * For **CodeForces, AtCoder, SPOJ** and **UVa Online Judge:**
+ * For **Codeforces, AtCoder, SPOJ** and **UVa Online Judge:**
    * All of those platforms expect you to submit solutions in one file using the standard `public class Main { public static void main(...` format. When developing your solutions with SolveKit, name the class something other than Main, preferably an identifier for the problem you're solving. Then, when you submit your solution, just remember to change the public class's name back to Main.
    * All of those platforms also use stdin/stdout for I/O. Input will be sent to stdin from text files in the `inputs` directory by SolveKit. You can do output the same way you usually do.
 

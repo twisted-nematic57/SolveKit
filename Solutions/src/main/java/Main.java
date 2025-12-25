@@ -8,6 +8,7 @@
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
 
 public class Main {
   static void main(String[] args) throws Exception {
@@ -22,6 +23,9 @@ public class Main {
     //    range [0, (2^31)-1].
     //  * If the letter S is at the end and B is also present, benchmark timing data will be saved to a CSV in ./inputs.
 
+    final String[] supportedPlatforms = new String[] {"AdventOfCode", "LeetCode", "ProjectEuler", "Codeforces",
+        "AtCoder", "SPOJ", "UVa"};
+
     final boolean saveBenchResultsToCSV;
     if(args[0].contains("S")) { // We must save benchmark results to CSV
       saveBenchResultsToCSV = true;
@@ -30,29 +34,54 @@ public class Main {
       saveBenchResultsToCSV = false;
     }
 
-    final int testNum = Integer.parseInt(args[0].substring(args[0].indexOf("-")+1, args[0].indexOf("-")+2));
-    final boolean benchmarking = args[0].contains("B");
-    final String platformName = args[0].substring(0, args[0].indexOf("."));
+    final int testNum;
+    final boolean benchmarking;
+    final String platformName;
+    try {
+      testNum = Integer.parseInt(args[0].substring(args[0].indexOf("-")+1, args[0].indexOf("-")+2));
+      benchmarking = args[0].contains("B");
+      platformName = args[0].substring(0, args[0].indexOf("."));
+    } catch(Exception e) {
+      System.out.println("Error parsing arguments.\n\nError details:\n" + e.getMessage());
+      return;
+    }
+
 
     try {
+      // Input validation
+      if(testNum < 0 || testNum > 9) { // Is the test # in [0, 9]?
+        throw new IllegalSpecifierException("Invalid test number. Test numbers must be integers in the range [0, 9].");
+      }
+
+      if(!(Arrays.stream(supportedPlatforms).toList().contains(platformName))) { // Is the requested platform invalid?
+        throw new IllegalSpecifierException("Invalid platform name. Platform name must be one of the following:\n" +
+            "\"AdventOfCode\", \"LeetCode\", \"ProjectEuler\", \"Codeforces\", \"AtCoder\", \"SPOJ\", \"UVa\"");
+      }
+
+      SolutionSpecifier thisSolution = new SolutionSpecifier(
+          args[0].substring(args[0].indexOf(".") + 1, args[0].indexOf("-")),
+          testNum
+      );
+
+      // Solution running
       if(!benchmarking) { // Not benchmarking, running only once
-        SolutionSpecifier thisSolution = new SolutionSpecifier(
-            args[0].substring(args[0].indexOf(".") + 1, args[0].indexOf("-")),
-            testNum
-        );
         long runtime = 0; // in nanoseconds
         switch (platformName) {
           case "AdventOfCode":
-            AdventOfCodePlatformHandler thisProblem = new AdventOfCodePlatformHandler();
-            runtime = thisProblem.runSolution(thisSolution); // Possible runtime exception for this is handled.
+            AdventOfCodePlatformHandler aoc = new AdventOfCodePlatformHandler();
+            runtime = aoc.runSolution(thisSolution);
 
             // The solution will be responsible for printing its own output.
             break;
           case "LeetCode":
+            LeetCodePlatformHandler lc = new LeetCodePlatformHandler();
+            runtime = lc.runSolution(thisSolution);
+
+            // The main method of the solution is responsible for printing a return value.
             break;
           case "ProjectEuler":
             break;
-          case "CodeForces":
+          case "Codeforces":
             break;
           case "AtCoder":
             break;
@@ -68,38 +97,24 @@ public class Main {
       } else { // Benchmarking mode
 
         int benchmarkingIterations = Integer.parseInt(args[0].substring(args[0].indexOf("B") + 1));
-        if(benchmarkingIterations <= 1) {
-          throw new IllegalArgumentException("Benchmarking iterations must be > 1");
+        if(benchmarkingIterations <= 2) {
+          throw new IllegalSpecifierException("Benchmarking iterations must be > 2");
         }
 
-        SolutionSpecifier thisSolution = new SolutionSpecifier(
-            args[0].substring(args[0].indexOf(".") + 1, args[0].indexOf("-")),
-            testNum
-        );
         long[] benchmarkRuntimes = new long[benchmarkingIterations];
 
         switch (platformName) {
           case "AdventOfCode":
-            AdventOfCodePlatformHandler thisProblem = new AdventOfCodePlatformHandler();
-            benchmarkRuntimes = thisProblem.benchmarkSolution(thisSolution, benchmarkingIterations);
-
-            // If we're supposed to save the data to a CSV, then save it
-            try {
-              if(saveBenchResultsToCSV) {
-                long now = Instant.now().getEpochSecond(); // Current Unix timestamp
-                BenchmarkReporter.saveToCSV(benchmarkRuntimes, now);
-                System.out.println("Benchmark results saved to runtimes_" + now + ".csv in inputs directory.\n");
-              }
-            } catch (IOException e) {
-              System.out.println("Error: Couldn't save benchmark results to CSV. Error details:\n" + e.getMessage() + "\n");
-            }
-
+            AdventOfCodePlatformHandler aoc = new AdventOfCodePlatformHandler();
+            benchmarkRuntimes = aoc.benchmarkSolution(thisSolution, benchmarkingIterations);
             break;
           case "LeetCode":
+            LeetCodePlatformHandler lc = new LeetCodePlatformHandler();
+            benchmarkRuntimes = lc.benchmarkSolution(thisSolution, benchmarkingIterations);
             break;
           case "ProjectEuler":
             break;
-          case "CodeForces":
+          case "Codeforces":
             break;
           case "AtCoder":
             break;
@@ -118,73 +133,31 @@ public class Main {
         Statistics allRuns = new Statistics(benchmarkRuntimes);
         Statistics last80p = new Statistics(benchmarkRuntimes_last80p);
 
+        // Repeat info about the solution being benchmarked
+        System.out.println("\nBenchmarking results for solution " + platformName + "." + thisSolution.name() + ":");
+
         // Print the pretty stats table
         BenchmarkReporter.showBenchmarkResults(allRuns, last80p);
-      }
-    } catch(IOException e) {
-      System.out.println("\nError: The input file couldn't be opened. Does it exist?\n" + e.getMessage());
-    } catch(IllegalArgumentException e) {
-      System.out.println("\nError: Please supply a number of benchmarking iterations > 1.\n\nDetails:\n" + e.getMessage());
-    } catch(Exception e) {
-      System.out.println("\nError: Failed to run the solution. If you are in IntelliJ IDEA, try clicking anywhere in the" +
-          " solution source code window and try again.\n\nError details:\n" + e.getMessage());
-    }
-
-    /*
-    if(!args[0].contains("B")) { // --- RUNNING SOLUTION ONCE ---
-      long runtime = RunSolution(
-          Integer.parseInt(args[0].substring(1, 5)),       // Year
-          Integer.parseInt(args[0].substring(7, 9)),       // Day
-          Integer.parseInt(args[0].substring(10, 11)),     // Part
-          Integer.parseInt(args[0].substring(12, 13)));    // Test
-
-      if(runtime != -1) { // In general, if something == -1 in the runner then something has gone wrong; likely an inexistent problem has been input.
-        System.out.println("\n---------------------------------------------------");
-        System.out.printf("Runtime: %.3f ms", UnitConverter.ns_ms(runtime));
-      } else {
-        System.out.println("\nThe solution couldn't be run. Are you sure the specified solution exists?");
-      }
-    } else { // --- BENCHMARKING ---
-      System.out.println("Initializing benchmarking...");
-
-      long[] benchResults = BenchmarkSolution(
-          Integer.parseInt(args[0].substring(1, 5)),                      // Year
-          Integer.parseInt(args[0].substring(7, 9)),                      // Day
-          Integer.parseInt(args[0].substring(10, 11)),                    // Part
-          Integer.parseInt(args[0].substring(12, 13)),                    // Test
-          Integer.parseInt(args[0].substring(args[0].indexOf("B") + 1))); // # of iterations
-
-      if(benchResults[0] != -1) {
-        System.out.println("\n---------------------------------------------------");
-        System.out.println("Calculating statistics...\n");
-        // Process benchmarking results and statistics:
-        // One about the entire list of exec times and one about the last 80% (to account for JVM warmup, optimization & stabilization)
 
         // If we're supposed to save the data to a CSV, then save it
         try {
           if(saveBenchResultsToCSV) {
             long now = Instant.now().getEpochSecond(); // Current Unix timestamp
-            BenchmarkReporter.saveToCSV(benchResults, now);
-            System.out.println("Benchmark results saved to runtimes_" + now + ".csv in inputs directory.\n");
+            BenchmarkReporter.saveToCSV(benchmarkRuntimes, now);
+            System.out.println("\nBenchmark results saved to runtimes_" + now + ".csv in inputs directory.");
           }
         } catch (IOException e) {
-          System.out.println("Couldn't save benchmark results to CSV. Error details:\n" + e.getMessage() + "\n");
-        }
-
-        // Make an array of length 80% of benchResults
-        long[] benchResults_last80p = new long[(int)(Math.ceil(benchResults.length*0.8))];
-        // Copy the last 80% of elements of benchResults to benchResults_last80p
-        System.arraycopy(benchResults, (int)(Math.floor(benchResults.length*0.2)), benchResults_last80p, 0, benchResults_last80p.length);
-
-        // Compute statistical variables on our runtime data
-        Statistics allRuns = new Statistics(benchResults);
-        Statistics last80p = new Statistics(benchResults_last80p);
-
-        // Print the pretty stats table
-        BenchmarkReporter.showBenchmarkResults(allRuns, last80p);
-      } else {
-        System.out.println("\nThe solution couldn't be run. Are you sure the specified solution exists?");
-      }
-    }*/
+          System.out.println("Error: Couldn't save benchmark results to CSV. Error details:\n" + e.getMessage() + "\n");
+        } // End of benchmarking handling
+      } // End of solution runner
+    } catch(IOException e) {
+      System.out.println("\nError: The input file couldn't be opened. Does it exist?\n" + e.getMessage());
+    } catch(IllegalSpecifierException e) {
+      System.out.println("\nError: Incorrect arguments were provided to SolveKit.\n\nDetails:\n" + e.getMessage() +
+          "\n\nIf you are in IntelliJ IDEA, try clicking anywhere in the solution source code window and try again.");
+    } catch(Exception e) {
+      System.out.println("\nError: Failed to run the solution. If you are in IntelliJ IDEA, try clicking anywhere in the" +
+          " solution source code window and try again.\n\nError details:\n" + e.getMessage());
+    }
   }
 }

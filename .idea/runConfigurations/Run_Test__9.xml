@@ -3,7 +3,7 @@
     <option name="ALTERNATIVE_JRE_PATH" value="$PROJECT_DIR$/../../cfs/hyperjdk2/build/jdk25p12/jdk" />
     <option name="MAIN_CLASS_NAME" value="Main" />
     <module name="Solutions" />
-    <option name="PROGRAM_PARAMETERS" value="$FileDirName$.$FileNameWithoutAllExtensions$-9" />
+    <option name="PROGRAM_PARAMETERS" value="$FileClass$-9" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/inputs" />
     <method v="2">
       <option name="Make" enabled="true" />

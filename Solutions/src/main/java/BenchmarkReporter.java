@@ -56,7 +56,7 @@ public class BenchmarkReporter {
        If your runs are taking longer than that, you are probably serious enough to use the CSV output option; just include
        "S" at the end of the command line argument or use the "Benchmark Solution -> CSV" Run/Debug config in IntelliJ. */
 
-    System.out.println("\n+-------------------------------------------------+-------------------------------------------------+");
+    System.out.println("+-------------------------------------------------+-------------------------------------------------+");
     System.out.println("| Benchmark results (runtime, all runs):          | Benchmark results (runtime, last 80% of runs):  |");
     System.out.printf ("|  * Runs     : %-32d  |  * Runs     : %-32d  |\n", all.getRuns(), last80p.getRuns());
     System.out.printf ("|  * Mean     : %-11.3f ms / %-12.1f µs  |  * Mean     : %-11.3f ms / %-12.1f µs  |\n", UnitConverter.ns_ms(all.getMean()), UnitConverter.ns_us(all.getMean()), UnitConverter.ns_ms(last80p.getMean()), UnitConverter.ns_us(last80p.getMean()));
