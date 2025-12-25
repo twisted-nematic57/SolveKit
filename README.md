@@ -37,9 +37,11 @@ Every time before clicking the Run button, click anywhere in the editor window c
  * To **test** your solution on a different piece of input, be sure that you've correctly set input files as described in step 4 above. Then, set your Run/Debug configuration to "Run Test #N" where N is the test number you want to run. Then, click the Run button.
  * To **benchmark** your solution, set your Run/Debug configuration to "Benchmark Solution". There will be two prompts that pop up before the solution is run. In order, here's what the prompts ask for:
    * The test # you want to benchmark the solution on. (In many situations, runtimes vary based on content and length of inputs.)
-   * The number of times you want the solution to be run. SolveKit will run your solution that many times and print statistics on all runtimes. It will also print statistics on only the last 80% of runs, as JVM warmup, optimization & stabilization must be accounted for.
+   * The number of times you want the solution to be run. SolveKit will run your solution that many times and print statistics on all runtimes. It will also print statistics on only the last 80% of runs, as JVM warmup, optimization & stabilization must be accounted for. 
    
    There is also a benchmarking Run/Debug configuration called "Benchmark Solution -> CSV". It behaves the same as the regular benchmarking config, but it will also save a CSV file containing the amount of time, in nanoseconds, each run of the solution took. The CSV will be stored in [`inputs`](./inputs), as that is the configured CWD of SolveKit, and it'll be named `runtimes_T.csv` where T is the current Unix timestamp in seconds. The CSV will just be one giant column of numbers, where the top element is the first run.
+
+**Important benchmarking note:** Console output is infamously slow. Comment out all code that causes console output to get meaningful benchmark results.
 
 
 ### What format should my solutions be in?
