@@ -80,6 +80,10 @@ public class Main {
             // The main method of the solution is responsible for printing a return value.
             break;
           case "ProjectEuler":
+            ProjectEulerPlatformHandler e = new ProjectEulerPlatformHandler();
+            runtime = e.runSolution(thisSolution);
+
+            // The main method of the solution is responsible for printing a return value.
             break;
           case "Codeforces":
             break;
@@ -113,6 +117,8 @@ public class Main {
             benchmarkRuntimes = lc.benchmarkSolution(thisSolution, benchmarkingIterations);
             break;
           case "ProjectEuler":
+            ProjectEulerPlatformHandler e = new ProjectEulerPlatformHandler();
+            benchmarkRuntimes = e.benchmarkSolution(thisSolution, benchmarkingIterations);
             break;
           case "Codeforces":
             break;
