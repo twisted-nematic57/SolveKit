@@ -9,6 +9,7 @@
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Map;
 
 public class Main {
   static void main(String[] args) throws Exception {
@@ -23,9 +24,6 @@ public class Main {
     //    range [0, (2^31)-1].
     //  * If the letter S is at the end and B is also present, benchmark timing data will be saved to a CSV in ./inputs.
 
-    final String[] supportedPlatforms = new String[] {"AdventOfCode", "LeetCode", "ProjectEuler", "Codeforces",
-        "AtCoder", "SPOJ", "UVa"};
-
     final boolean saveBenchResultsToCSV;
     if(args[0].charAt(args[0].length() - 1) == 'S') { // We must save benchmark results to CSV if there is an S at the end of the arg
       saveBenchResultsToCSV = true;
@@ -33,6 +31,16 @@ public class Main {
     } else {
       saveBenchResultsToCSV = false;
     }
+
+    Map<String, PlatformHandler> handlers = Map.of(
+        "AdventOfCode", new AdventOfCodePlatformHandler(),
+        "LeetCode", new LeetCodePlatformHandler(),
+        "ProjectEuler", new ProjectEulerPlatformHandler(),
+        "Codeforces", new CodeforcesPlatformHandler(),
+        "AtCoder", new AtCoderPlatformHandler(),
+        "SPOJ", new SPOJPlatformHandler(),
+        "UVa", new UVaPlatformHandler()
+    );
 
     final int testNum;
     final boolean benchmarking;
@@ -47,10 +55,12 @@ public class Main {
       // Extract the benchmark flag from the part of the string after the "-"
       benchmarking = args[0].substring(args[0].indexOf("-")+1).contains("B");
     } catch(Exception e) {
-      System.out.println("Error parsing arguments.\n\nError details:\n" + e.getMessage());
+      System.out.println("Error parsing arguments.\nIf you are in IntelliJ IDEA, try clicking anywhere in the solution " +
+          "source code window and try again.\n\nError details:\n" + e.getMessage());
       return;
     }
 
+    PlatformHandler handler = handlers.get(platformName);
 
     try {
       // Input validation
@@ -58,9 +68,9 @@ public class Main {
         throw new IllegalSpecifierException("Invalid test number. Test numbers must be integers in the range [0, 9].");
       }
 
-      if(!(Arrays.stream(supportedPlatforms).toList().contains(platformName))) { // Is the requested platform invalid?
+      if(!handlers.containsKey(platformName)) { // Is the requested platform invalid?
         throw new IllegalSpecifierException("Invalid platform name. Platform name must be one of the following:\n" +
-            "\"AdventOfCode\", \"LeetCode\", \"ProjectEuler\", \"Codeforces\", \"AtCoder\", \"SPOJ\", \"UVa\"");
+            String.join(", ", handlers.keySet())); // Print all valid platforms
       }
 
       SolutionSpecifier thisSolution = new SolutionSpecifier(
@@ -69,79 +79,23 @@ public class Main {
       );
 
       // Solution running
-      if(!benchmarking) { // Not benchmarking, running only once
-        long runtime = 0; // in nanoseconds
-        switch (platformName) {
-          case "AdventOfCode":
-            AdventOfCodePlatformHandler aoc = new AdventOfCodePlatformHandler();
-            runtime = aoc.runSolution(thisSolution);
-
-            // The solution will be responsible for printing its own output.
-            break;
-          case "LeetCode":
-            LeetCodePlatformHandler lc = new LeetCodePlatformHandler();
-            runtime = lc.runSolution(thisSolution);
-
-            // The main method of the solution is responsible for printing a return value.
-            break;
-          case "ProjectEuler":
-            ProjectEulerPlatformHandler e = new ProjectEulerPlatformHandler();
-            runtime = e.runSolution(thisSolution);
-
-            // The main method of the solution is responsible for printing a return value.
-            break;
-          case "Codeforces":
-            CodeforcesPlatformHandler cf = new CodeforcesPlatformHandler();
-            runtime = cf.runSolution(thisSolution);
-            break;
-          case "AtCoder":
-            AtCoderPlatformHandler ac = new AtCoderPlatformHandler();
-            runtime = ac.runSolution(thisSolution);
-            break;
-          case "SPOJ":
-            break;
-          case "UVa":
-            break;
-        }
-
+      if(!benchmarking) { // We are running the solution only once
+        long runtime = handler.runSolution(thisSolution);
         System.out.println("\n---------------------------------------------------");
         System.out.printf("Runtime: %.1f μs / %.3f ms", UnitConverter.ns_us(runtime), UnitConverter.ns_ms(runtime));
-
-      } else { // Benchmarking mode
-
-        int benchmarkingIterations = Integer.parseInt(args[0].substring(args[0].indexOf("B") + 1));
-        if(benchmarkingIterations <= 2) {
+      } else { // Benchmarking
+        /* Extract the number of benchmarking iterations from the command line arg:
+           The number will always occur 2 spaces after the dash and ends at the end of the arg because we chopped
+           the S off earlier, if it was there to begin with.
+         */
+        int benchmarkingIterations = Integer.parseInt(args[0].substring(args[0].indexOf("-")+3));
+        if(benchmarkingIterations <= 2) { // Statistical calculation code glitches if there are less than 3 data points
           throw new IllegalSpecifierException("Benchmarking iterations must be > 2");
         }
 
-        long[] benchmarkRuntimes = new long[benchmarkingIterations];
+        long[] benchmarkRuntimes = handler.benchmarkSolution(thisSolution, benchmarkingIterations);
 
-        switch (platformName) {
-          case "AdventOfCode":
-            AdventOfCodePlatformHandler aoc = new AdventOfCodePlatformHandler();
-            benchmarkRuntimes = aoc.benchmarkSolution(thisSolution, benchmarkingIterations);
-            break;
-          case "LeetCode":
-            LeetCodePlatformHandler lc = new LeetCodePlatformHandler();
-            benchmarkRuntimes = lc.benchmarkSolution(thisSolution, benchmarkingIterations);
-            break;
-          case "ProjectEuler":
-            ProjectEulerPlatformHandler e = new ProjectEulerPlatformHandler();
-            benchmarkRuntimes = e.benchmarkSolution(thisSolution, benchmarkingIterations);
-            break;
-          case "Codeforces":
-            CodeforcesPlatformHandler cf = new CodeforcesPlatformHandler();
-            benchmarkRuntimes = cf.benchmarkSolution(thisSolution,  benchmarkingIterations);
-            break;
-          case "AtCoder":
-            AtCoderPlatformHandler ac = new AtCoderPlatformHandler();
-            benchmarkRuntimes = ac.benchmarkSolution(thisSolution,  benchmarkingIterations);
-            break;
-          case "SPOJ":
-            break;
-          case "UVa":
-            break;
-        }
+        System.out.println("Computing statistics...");
 
         // Make an array of length 80% of benchmarkRuntimes
         long[] benchmarkRuntimes_last80p = new long[(int)(Math.ceil(benchmarkRuntimes.length*0.8))];
@@ -167,8 +121,8 @@ public class Main {
           }
         } catch (IOException e) {
           System.out.println("Error: Couldn't save benchmark results to CSV. Error details:\n" + e.getMessage() + "\n");
-        } // End of benchmarking handling
-      } // End of solution runner
+        }
+      }
     } catch(IOException e) {
       System.out.println("\nError: The input file couldn't be opened. Does it exist?\n" + e.getMessage());
     } catch(IllegalSpecifierException e) {

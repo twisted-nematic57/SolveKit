@@ -1,59 +1,57 @@
-/*** AdventOfCodePlatformHandler.java *****************************************\
+/*** UVaPlatformHandler.java **************************************************\
  * Author:         twisted_nematic57                                          *
- * Date Created:   2025-12-22                                                 *
- * Description:    Handles running and benchmarking solutions to Advent of    *
- *                 Code problems.                                             *
+ * Date Created:   2025-12-25                                                 *
+ * Description:    Handles running and benchmarking solutions to UVa Online   *
+ *                 Judge problems.                                            *
 \******************************************************************************/
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Stream;
+import java.nio.file.Paths;
 
-public class AdventOfCodePlatformHandler implements PlatformHandler {
-  private String[] cachedInput;
+public class UVaPlatformHandler implements PlatformHandler {
+  private byte[] cachedInput;
 
-  // Load input from an input file into an array of strings.
+  // Load input from an input file store it in RAM to avoid excessive disk accesses later.
   @Override
   public void loadInput(SolutionSpecifier thisSolution) throws IOException {
-    List<String> input = List.of(); // Empty list
-    try (Stream<String> lines = Files.lines(
-        Path.of("AdventOfCode/i_" + thisSolution.name() + "_" + thisSolution.test() + ".txt"))) {
-      input = lines.toList();
-    }
+    cachedInput = Files.readAllBytes(
+        Paths.get("UVa/i_" + thisSolution.name() + "_" + thisSolution.test() + ".txt")
+    );
+  }
 
-    cachedInput = input.toArray(new String[input.size()]);
+  // Sets stdin to the cached input.
+  public void passStdInput() {
+    System.setIn(new ByteArrayInputStream(cachedInput));
   }
 
   @Override
   public long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException, IOException {
-    // Load input for the problem and testcase.
     loadInput(thisSolution);
-    String[] input = cachedInput.clone();
+    passStdInput();
 
     // Do some reflection voodoo to be able to call the solution's main method
-    Class<?> solutionClass = Class.forName("AdventOfCode." + thisSolution.name());
-    Method solutionMain = solutionClass.getMethod("main", String[].class);
+    Class<?> solutionClass = Class.forName("UVa." + thisSolution.name());
+    Method solutionMain = solutionClass.getMethod("main");
 
     // Call the solution and time it.
     long tickStart = System.nanoTime();
-    solutionMain.invoke(null, new Object[] {input});
+    solutionMain.invoke(null);
     return System.nanoTime() - tickStart; // Return execution time of entire solution
   }
 
   @Override
   public long[] benchmarkSolution(SolutionSpecifier thisSolution, int iterations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
-    // Load input for the problem and testcase.
     loadInput(thisSolution);
 
     // Do some reflection voodoo to be able to call the solution's main method
-    Class<?> solutionClass = Class.forName("AdventOfCode." + thisSolution.name());
-    Method solutionMain = solutionClass.getMethod("main", String[].class);
+    Class<?> solutionClass = Class.forName("UVa." + thisSolution.name());
+    Method solutionMain = solutionClass.getMethod("main");
 
     // Do not use the JVM argument --add-opens when running benchmarks. It is a legacy argument meant to maintain
     // backwards compatibility with old code and is completely irrelevant to programming puzzle solutions.
@@ -64,7 +62,7 @@ public class AdventOfCodePlatformHandler implements PlatformHandler {
 
     long[] execTimes = new long[iterations];
     for(int i = 0; i < iterations; i++) { // Run the solution `iterations` times and record execution time of each iteration
-      Object[] input = new Object[] {cachedInput.clone()}; // Do ->Object[] conversion beforehand to increase accuracy of later time measurements
+      passStdInput(); // Refresh stdin
 
       // Disable console output to increase performance and ignore non-algorithmic runtime
       System.setOut(new PrintStream(OutputStream.nullOutputStream()));
@@ -72,7 +70,7 @@ public class AdventOfCodePlatformHandler implements PlatformHandler {
 
       try {
         long tickStart = System.nanoTime(); // Begin timing
-        solutionMain.invoke(null, input);
+        solutionMain.invoke(null);
         execTimes[i] = System.nanoTime() - tickStart; // End timing
       } finally {
         System.setOut(originalOut); // Restore console printing functionality for stats printing of this run

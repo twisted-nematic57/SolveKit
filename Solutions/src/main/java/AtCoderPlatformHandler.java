@@ -5,6 +5,7 @@
  *                 problems.                                                  *
 \******************************************************************************/
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -14,16 +15,25 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class AtCoderPlatformHandler implements PlatformHandler {
-  // Load input from an input file and put it into stdin.
+  private byte[] cachedInput;
+
+  // Load input from an input file store it in RAM to avoid excessive disk accesses later.
   @Override
-  public void passStdInput(SolutionSpecifier thisSolution) throws IOException {
-    // Sets stdin to a stream full of only content from the input file.
-    System.setIn(Files.newInputStream(Paths.get("AtCoder/i_" + thisSolution.name() + "_" + thisSolution.test() + ".txt")));
+  public void loadInput(SolutionSpecifier thisSolution) throws IOException {
+    cachedInput = Files.readAllBytes(
+        Paths.get("AtCoder/i_" + thisSolution.name() + "_" + thisSolution.test() + ".txt")
+    );
+  }
+
+  // Sets stdin to the cached input.
+  public void passStdInput() {
+    System.setIn(new ByteArrayInputStream(cachedInput));
   }
 
   @Override
   public long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException, IOException {
-    passStdInput(thisSolution);
+    loadInput(thisSolution);
+    passStdInput();
 
     // Do some reflection voodoo to be able to call the solution's main method
     Class<?> solutionClass = Class.forName("AtCoder." + thisSolution.name());
@@ -37,7 +47,7 @@ public class AtCoderPlatformHandler implements PlatformHandler {
 
   @Override
   public long[] benchmarkSolution(SolutionSpecifier thisSolution, int iterations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
-    passStdInput(thisSolution);
+    loadInput(thisSolution);
 
     // Do some reflection voodoo to be able to call the solution's main method
     Class<?> solutionClass = Class.forName("AtCoder." + thisSolution.name());
@@ -52,6 +62,8 @@ public class AtCoderPlatformHandler implements PlatformHandler {
 
     long[] execTimes = new long[iterations];
     for(int i = 0; i < iterations; i++) { // Run the solution `iterations` times and record execution time of each iteration
+      passStdInput(); // Refresh stdin
+
       // Disable console output to increase performance and ignore non-algorithmic runtime
       System.setOut(new PrintStream(OutputStream.nullOutputStream()));
       System.setErr(new PrintStream(OutputStream.nullOutputStream()));

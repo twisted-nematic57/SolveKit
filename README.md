@@ -1,7 +1,7 @@
-# Note: This repo is WIP as of the latest commit.
-
 # SolveKit
 SolveKit is a convenient runner and benchmarker for Java solutions to programming problems, with seamless integration into IntelliJ IDEA. It enables users to quickly design new solutions to programming problems and run, test, and benchmark them on different inputs quickly without having to worry about the testing and benchmarking infrastructure.
+
+This is intended to be a tool for **practicing,** and one should always remember that interview coding will likely happen outside the comfort of the IDE this is meant to be used in.
 
 
 ## Overview
@@ -44,7 +44,7 @@ Every time before clicking the Run button, click anywhere in the editor window c
  * To **test** your solution on a different piece of input, be sure that you've correctly set input files as described in step 4 above. Then, set your Run/Debug configuration to "Run Test #N" where N is the test number you want to run. Then, click the Run button.
  * To **benchmark** your solution, set your Run/Debug configuration to "Benchmark Solution". There will be two prompts that pop up before the solution is run. In order, here's what the prompts ask for:
    * The test # you want to benchmark the solution on. (In many situations, runtimes vary based on content and length of inputs.)
-   * The number of times you want the solution to be run. SolveKit will run your solution that many times and print statistics on all runtimes. It will also print statistics on only the last 80% of runs, as JVM warmup, optimization & stabilization must be accounted for. 
+   * The number of times you want the solution to be run. SolveKit will run your solution that many times and print statistics on all runtimes. It will also print statistics on only the last 80% of runs, as JVM warmup, optimization & stabilization must be accounted for. *(You must pass a number > 2 because the statistical calculation code crashes when there are less than 3 data points; so few data points have no meaning in this context anyway.)*
    
    There is also a benchmarking Run/Debug configuration called "Benchmark Solution -> CSV". It behaves the same as the regular benchmarking config, but it will also save a CSV file containing the amount of time, in nanoseconds, each run of the solution took. The CSV will be stored in [`inputs`](./inputs), as that is the configured CWD of SolveKit, and it'll be named `runtimes_T.csv` where T is the current Unix timestamp in seconds. The CSV will just be one giant column of numbers, where the top element is the first run.
 
@@ -55,6 +55,7 @@ Every time before clicking the Run button, click anywhere in the editor window c
 There are some website-specific (I call it "platform-specific") differences, but generally:
  * Keep each solution contained in its own single source file. To do this, make only the class that contains the main method public. Where the code flows from the main method is platform-dependent.
  * The name of the class that contains the main method for each solution must follow a certain pattern or otherwise correspond with an identifier for the problem that the solution is for. This makes it easy to keep track of what solution it is at a glance.
+ * Do not create new packages. SolveKit depends on the properties of the `.` (and `-`) it receives in command-line arguments from IntelliJ IDEA.
 
 
 ### Platform-Specific Differences

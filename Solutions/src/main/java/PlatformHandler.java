@@ -15,12 +15,10 @@ import java.lang.reflect.InvocationTargetException;
 
 public interface PlatformHandler {
   // Used for platforms that rely on plaintext input via a file
-  default String[] loadInput(SolutionSpecifier thisSolution) throws IOException {
-    return new String[0];
-  }
+  default void loadInput(SolutionSpecifier thisSolution) throws IOException { }
 
   // Used for platforms that rely on stdin for input
-  default void passStdInput(SolutionSpecifier thisSolution) throws IOException { }
+  default void passStdInput() { }
 
   // Runs the solution once. Returns the runtime of the solution in ns.
   long runSolution(SolutionSpecifier thisSolution) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException, IOException;
