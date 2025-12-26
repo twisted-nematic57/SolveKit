@@ -25,26 +25,26 @@ Each solution can be run, tested on different sets of inputs (if applicable), an
 2. Under the package that matches the name of the platform you're creating a solution for, create a new Java class. Name it something meaningful, preferably an identifier for the problem you're solving.
    * e.g., a class called `y2025_d07p1` in package `AdventOfCode` for "Day 7, Part 1 of Advent of Code 2025".
 3. Write your solution based on the sample solution for your platform. There are sample solutions in each platform's module. They solve the first and simplest problem of each platform, and illustrate what SolveKit expects of your solutions.
-   * **Advent of Code:** [Day 1, Part 1 of 2015](https://adventofcode.com/2015/day/1)
-   * **LeetCode:** [Problem #1 ("Two Sum")](https://leetcode.com/problems/two-sum/)
-   * **Project Euler:** [Problem #1 ("Multiples of 3 or 5")](https://projecteuler.net/problem=1)
-   * **Codeforces:** [Problem #1A ("A. Theatre Square")](https://codeforces.com/problemset/problem/1/A)
-   * **AtCoder:** [ABC424 - A - Isosceles](https://atcoder.jp/contests/abc424/tasks/abc424_a)
-   * **SPOJ:** [Life, the Universe, and Everything](https://www.spoj.com/problems/TEST/)
-   * **UVa Online Judge**: [100 - The 3n + 1 problem](https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=3&page=show_problem&problem=36)
+   * **Advent of Code:** [Day 1, Part 1 of 2015](https://adventofcode.com/2015/day/1) - [Solution](./Solutions/src/main/java/AdventOfCode/y2015_d01p1.java)
+   * **LeetCode:** [Problem #1 ("Two Sum")](https://leetcode.com/problems/two-sum/) - [Solution](./Solutions/src/main/java/LeetCode/p1.java)
+   * **Project Euler:** [Problem #1 ("Multiples of 3 or 5")](https://projecteuler.net/problem=1) - [Solution](./Solutions/src/main/java/ProjectEuler/p1.java)
+   * **Codeforces:** [Problem #1A ("A. Theatre Square")](https://codeforces.com/problemset/problem/1/A) - [Solution](./Solutions/src/main/java/Codeforces/p1A.java)
+   * **AtCoder:** [ABC424 - A - Isosceles](https://atcoder.jp/contests/abc424/tasks/abc424_a) - [Solution](./Solutions/src/main/java/AtCoder/ABC424A.java)
+   * **SPOJ:** [Life, the Universe, and Everything](https://www.spoj.com/problems/TEST/) - [Solution](./Solutions/src/main/java/SPOJ/p1.java)
+   * **UVa Online Judge**: [100 - The 3n + 1 problem](https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=3&page=show_problem&problem=36) - [Solution](./Solutions/src/main/java/UVa/p100.java)
 4. If your platform requires you to accept input data at runtime, and *it isn't LeetCode*:
    * In the respective platform's subdirectory in [`inputs`](./inputs), you must create plaintext files that adhere to the following name format: `i_{ProblemSpecifier}_{Test#}.txt`
    * All input file names start with `i_` and end with `.txt`.
    * `{ProblemSpecifier}` is the **name of the solution class** that will use that file as input.
    * `{Test#}` is a **one-digit integer (0-9)** that specifies the test number. This field allows you to specify a different input for your solution without having to repeatedly modify the same file to change testcases. Test number 0 is the case that is accessed when you use the "Run Solution" Run/Debug configuration.
-   * e.g., `inputs/AdventOfCode/i_y2015_d01p1_0.txt` contains input for the solution to Day 7, Part 1 of Advent of Code 2025, assuming my solution class for that problem is named `y2025_d07p1` under the `AdventOfCode` class.
+   * e.g., `inputs/AdventOfCode/i_y2015_d01p1_6.txt` contains input for the solution to Day 7, Part 1 of Advent of Code 2025, assuming my solution class for that problem is named `y2025_d07p1` under the `AdventOfCode` package. I can run it using the "Run Test #6" Run/Debug configuration.
 
 Every time before clicking the Run button, click anywhere in the editor window containing your solution's source code. If you ever get strange string errors that occur outside your solution code, try clicking in the solution source code window and try again.
  * To **run** your solution, set the current Run/Debug Configuration to "Run Solution". Then, click the Run button.
  * To **test** your solution on a different piece of input, be sure that you've correctly set input files as described in step 4 above. Then, set your Run/Debug configuration to "Run Test #N" where N is the test number you want to run. Then, click the Run button.
  * To **benchmark** your solution, set your Run/Debug configuration to "Benchmark Solution". There will be two prompts that pop up before the solution is run. In order, here's what the prompts ask for:
    * The test # you want to benchmark the solution on. (In many situations, runtimes vary based on content and length of inputs.)
-   * The number of times you want the solution to be run. SolveKit will run your solution that many times and print statistics on all runtimes. It will also print statistics on only the last 80% of runs, as JVM warmup, optimization & stabilization must be accounted for. *(You must pass a number > 2 because the statistical calculation code crashes when there are less than 3 data points; so few data points have no meaning in this context anyway.)*
+   * The number of times you want the solution to be run. SolveKit will run your solution that many times and then print statistics on all runtimes. It will also print statistics on only the last 80% of runs, as JVM warmup, optimization & stabilization must be accounted for. *(You must pass a number > 2 because the statistical calculation code crashes when there are less than 3 data points; so few data points have little meaning in this context anyway.)*
    
    There is also a benchmarking Run/Debug configuration called "Benchmark Solution -> CSV". It behaves the same as the regular benchmarking config, but it will also save a CSV file containing the amount of time, in nanoseconds, each run of the solution took. The CSV will be stored in [`inputs`](./inputs), as that is the configured CWD of SolveKit, and it'll be named `runtimes_T.csv` where T is the current Unix timestamp in seconds. The CSV will just be one giant column of numbers, where the top element is the first run.
 
@@ -52,10 +52,10 @@ Every time before clicking the Run button, click anywhere in the editor window c
 
 
 ### What format should my solutions be in?
-There are some website-specific (I call it "platform-specific") differences, but generally:
- * Keep each solution contained in its own single source file. To do this, make only the class that contains the main method public. Where the code flows from the main method is platform-dependent.
+There are some platform-specific differences, but generally:
+ * Keep each solution contained in its own single source file. To do this, make only the class that contains the main method public. Where the execution should flow from the main method is platform-dependent.
  * The name of the class that contains the main method for each solution must follow a certain pattern or otherwise correspond with an identifier for the problem that the solution is for. This makes it easy to keep track of what solution it is at a glance.
- * Do not create new packages. SolveKit depends on the properties of the `.` (and `-`) it receives in command-line arguments from IntelliJ IDEA.
+ * Do not create new packages under the ones that already exist. SolveKit depends on the properties of the `.` (and `-`) it receives in command-line arguments from IntelliJ IDEA.
 
 
 ### Platform-Specific Differences
@@ -64,9 +64,10 @@ There are some website-specific (I call it "platform-specific") differences, but
  * For **LeetCode:**
    * As LeetCode does not provide full testcases to the public, you're going to be running your code on the short tests that they make publicly available.
    * So, in the main method, you are to create a switch case that sets your input variables to different values depending on the test #. If you aren't using a certain test # in the switch, just leave it unhandled.
-   * Write the method they expect you to write below the main method. Name it what they name it and copy its parameter names & types exactly - you defined these earlier in the main method.
+   * Create a class below the public class called `Solution`. Write the method they expect you to write in that. Name it what they name it and copy its parameter names & types exactly - you defined these earlier in the main method.
      * If it's a special question that requires you to implement an entire class, then write the class using the `class ... {` form they expect below the solution's public class. In the next step, call it the way that LeetCode says they will call it from the main method in the public class.
    * Now at the very end of the main method, call the method you wrote with the arguments you set in the switch case.
+   * If you're lost, take a look at the [sample solution.](./Solutions/src/main/java/LeetCode/p1.java)
  * For **Project Euler:** Use whatever code structure you like, following the one-file rule. There will be no "input" for Project Euler problems because they heavily emphasize mathematical rigor over large amounts of input processing. Since there is no scope for varying inputs, Project Euler solutions will also be insensitive to test numbers at runtime, i.e. the same code will run in the same way regardless of what test # you've specifed.
  * For **Codeforces, AtCoder, SPOJ** and **UVa Online Judge:**
    * All of those platforms expect you to submit solutions in one file using the standard `public class Main { public static void main(...` format. When developing your solutions with SolveKit, name the class something other than Main, preferably an identifier for the problem you're solving. Then, when you submit your solution, just remember to change the public class's name back to Main.

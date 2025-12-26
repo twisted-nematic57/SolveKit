@@ -85,15 +85,15 @@ public class BenchmarkReporter {
     FileLock lock = null;
     try {
       lock = channel.tryLock();
+
+      // Save every element to a row in the CSV
+      for(int i = 0; i < data.length; i++) {
+        stream.write(Long.toString(data[i]).getBytes());
+        stream.write("\n".getBytes());
+      }
     } catch (final OverlappingFileLockException e) {
       stream.close();
       channel.close();
-    }
-
-    // Save every element to a row in the CSV
-    for(int i = 0; i < data.length; i++) {
-      stream.write(Long.toString(data[i]).getBytes());
-      stream.write("\n".getBytes());
     }
 
     lock.release();

@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class Main {
-  static void main(String[] args) throws Exception {
+  static void main(String[] args) {
     // Arg (singular) will look like this: "{Platform}.{Specifier}-Z[BN[...][S]]"
     //  * {Platform} is a valid Java package name. It is the name of the platform that hosted the programming problem
     //    to which the solution is implemented. Supported values: "AdventOfCode", "LeetCode", "ProjectEuler",
